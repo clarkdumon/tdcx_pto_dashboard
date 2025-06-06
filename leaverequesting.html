@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+
+<style>
+    .leaverequestmodal {
+        display: flex;
+        flex-direction: column;
+        /* outline: 1px solid; */
+    }
+
+    .labeler {
+        display: flex;
+    }
+
+    .leaverequestmodal textarea {
+        width: 100%;
+        height: 50px;
+        resize: none;
+    }
+
+    .leaverequestmodal span {
+        padding: 5px;
+        display: flex;
+        flex-direction: row;
+        position: fixed;
+        align-self: flex-end;
+        right: 10px;
+
+    }
+</style>
+
+<body>
+    <div class="leaverequestmodal">
+        <label for="">Leave Date</label>
+        <input type="date" name="" id="leaverequestdate">
+
+        <label for="">PTO Reason</label>
+        <div class="labeler">
+            <textarea name="" id="ptoreason" maxlength="300"></textarea>
+            <span id="charactersleft">255 left</span>
+        </div>
+        <button type="button" name="submit" id="submitbutton">Submit</button>
+
+    </div>
+</body>
+
+<script type="module">
+    import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.49.10/+esm'
+    const supabase = createClient('https://jhqxioqnviaxdjlauyir.supabase.co', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpocXhpb3FudmlheGRqbGF1eWlyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDg4ODQ2MjksImV4cCI6MjA2NDQ2MDYyOX0.DAP7sLjxZCtbS-0G4c4brSda6wL2u9mC3QLBfKBXOUM')
+
+
+
+
+    async function getptorequests() {
+        let { data, error } = await supabase
+            .from('db_pto_request')
+            .select('*')
+        console.log(data)
+    }
+
+    async function sendptorequests() {
+
+        const { data,error } = await supabase
+            .from('db_pto_request')
+            .insert({created_at: new Date,leave_date: in_ptodate.value,requested_by: 'html.test@tdcx.com',requestee: 'clark.dumon1@tdcx.com',pto_reason: ta_ptoreason.value,status: 'CANCELLED'})
+            .select()
+        console.log(data)
+        console.log(error)
+    }
+
+
+    function form_pto_request(){
+        // created_at = current date and time {new Date}
+        // leave_date = pto leave date {input:date}
+        // requested_by = the one who filed the PTO request {get user email}
+        // requestee = PTO was file for? {input:dropdown}
+        // status = status of the PTO {check status for PTO}
+        // pto_reason = the reason for the PTO {textarea}
+
+
+
+
+    }
+
+
+
+
+    let ta_ptoreason = document.querySelector('textarea#ptoreason')
+    let btn_submit = document.querySelector('button#submitbutton')
+    let spn_charactersleft = document.querySelector('span#charactersleft')
+    let in_ptodate = document.querySelector('input#leaverequestdate')
+
+    spn_charactersleft.innerHTML = `${ta_ptoreason.maxLength} characters left`
+    ta_ptoreason.addEventListener("keyup", () => {
+        spn_charactersleft.innerHTML = ta_ptoreason.maxLength - ta_ptoreason.value.length + ` characters left`
+    })
+
+    btn_submit.addEventListener("click", () => {
+
+        if (in_ptodate.value != '') {
+            console.log(in_ptodate.value)
+            console.log(ta_ptoreason.value)
+            sendptorequests()
+            in_ptodate.value = null
+            ta_ptoreason.value = null
+
+        } else {
+            getptorequests()
+            console.log('Put in dates')
+        }
+    })
+
+</script>
+
+</html>

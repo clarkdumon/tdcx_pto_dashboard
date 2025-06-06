@@ -123,7 +123,10 @@
   const submitBtn = document.querySelector('#btn_pto_submit_request');
 
   // ptoModal.showModal()
-  openPtoBtn.addEventListener('click', () => { ptoModal.showModal() });
+  openPtoBtn.addEventListener('click', () => {
+    document.querySelector('#inpdate_leavedate').max = getLastDateOfMonthThreeMonthsFromToday()
+    ptoModal.showModal()
+  });
   closePtoBtn.addEventListener('click', () => ptoModal.close())
   submitBtn.addEventListener('click', sendPtoRequest)
 
@@ -164,6 +167,10 @@
       .select()
     console.log(data)
     console.log(error)
+
+    if (error == null) {
+      ptoModal.close()
+    }
     getPtoRequests()
   }
 
@@ -172,6 +179,12 @@
       .from('db_pto_request')
       .select('*')
     console.log(data)
+  }
+
+  function getLastDateOfMonthThreeMonthsFromToday() {
+    const today = new Date();
+    const targetDate = new Date(today.getFullYear(), today.getMonth() + 3 + 1, 0); // "+1" to move to next month, "0" to get last day of previous
+    return `${targetDate.toLocaleDateString().split("/")[2]}-${targetDate.toLocaleDateString().split("/")[1]}-${targetDate.toLocaleDateString().split("/")[0]}`
   }
 
 

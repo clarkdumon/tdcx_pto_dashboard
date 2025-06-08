@@ -160,7 +160,8 @@
 
   // ptoModal.showModal()
   openPtoBtn.addEventListener('click', () => {
-    document.querySelector('#inpdate_leavedate').max = getLastDateOfMonthThreeMonthsFromToday()
+    document.querySelector('#inpdate_leavedate').max = getLastDateOfMonthThreeMonthsFromToday();
+    document.querySelector('#inpdate_leavedate').min = '2025-06-29';
     ptoModal.showModal()
   });
   closePtoBtn.addEventListener('click', () => ptoModal.close())
@@ -220,7 +221,7 @@
   function getLastDateOfMonthThreeMonthsFromToday() {
     const today = new Date();
     const targetDate = new Date(today.getFullYear(), today.getMonth() + 3 + 1, 0); // "+1" to move to next month, "0" to get last day of previous
-    return `${targetDate.toLocaleDateString().split("/")[2]}-${targetDate.toLocaleDateString().split("/")[1]}-${targetDate.toLocaleDateString().split("/")[0]}`
+    return `${targetDate.toLocaleDateString().split("/")[2]}-${targetDate.toLocaleDateString().split("/")[0].padStart(2,'0')}-${targetDate.toLocaleDateString().split("/")[1].padStart(2,'0')}`
   }
 
 

@@ -229,16 +229,16 @@ justify-content: center;
 }
 
 table{
-    position: relative;
+table-layout: auto;
 }
 
 table td:nth-child(2){
-    width: 50px;
-    max-width: 50px;
+    width: 150px;
+    max-width: 150px;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
-    background:red;
+    /* background:red; */
 }
 
 

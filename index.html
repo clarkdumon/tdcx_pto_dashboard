@@ -27,7 +27,7 @@
         <h3>Wait list</h3>
       </div>
       <div class="sidebar-menu-item">
-        <span class="material-symbols-rounded">partner_exchange</span>
+        <span class="material-symbols-rounded">hub</span>
         <h3>Allocation</h3>
       </div>
     </div>
@@ -49,7 +49,7 @@
         <h1>Dashboard</h1>
       </div>
       <div class="subcontent_wrapper">
-        <button type="button" id="pto_request_btn" class="btn-info">Request PTO</button>
+        <button type="button" id="pto_request_btn" class="btn-info-norm btn-big">Request PTO</button>
         <dialog id="pto_request_dialog">
           <div class="dialog-header">
             <span class="material-symbols-rounded" id="pto_request_btn_close">cancel</span>
@@ -60,7 +60,7 @@
             <input type="date" name="inpdate_leavedate" id="inpdate_leavedate">
             <label for="textarea_ptoreason">PTO Reason</label>
             <textarea name="textarea_ptoreason" id="textarea_ptoreason" placeholder="Reason of request"></textarea>
-            <button type="button" id="btn_pto_submit_request" class="btn-info">Submit Request</button>
+            <button type="button" id="btn_pto_submit_request" class="btn-info-norm btn-big">Submit Request</button>
           </div>
         </dialog>
 
@@ -68,7 +68,7 @@
     </div>
     <div class="table-area">
       <div class="table-wrapper">
-        <table>
+        <table id='requested_pto_data'>
           <caption>Requested PTO</caption>
           <thead>
             <tr>
@@ -83,17 +83,19 @@
               <th></th>
             </tr>
           </thead>
-          <tbody>
+          <tbody id="ptotablebody">
             <tr>
-              <td><input type="checkbox" name="" id=""></td>
-              <td>17cb8cd5-4837-4a10-a8c6-56e1f3b9f1f3</td>
-              <td>07/06/2025, 01:08:45</td>
-              <td>testsender.sender@tdcx.com</td>
-              <td>testrecipient.recipient@tdcx.com</td>
-              <td>7/7/2025</td>
-              <td>Approved</td>
-              <td></td>
-              <td></td>
+              <td class="tbl-checkBox"><input type="checkbox" name="" id=""></td>
+              <td class="tbl-transactionID">17cb8cd5-4837-4a10-a8c6-56e1f3b9f1f3</td>
+              <td class="tbl-timestamp">07/06/2025, 01:08:45</td>
+              <td class="tbl-sender">testsender.sender@tdcx.com</td>
+              <td class="tbl-recipient">testrecipient.recipient@tdcx.com</td>
+              <td class="tbl-ptoDate">7/7/2025</td>
+              <td class="tbl-status">Approved</td>
+              <td class="tbl-statusRemarks"></td>
+              <td class="tbl-actionitems">
+                <button class="btn-danger">Delete</button>
+              </td>
             </tr>
             <tr>
               <td><input type="checkbox" name="" id=""></td>
@@ -149,6 +151,8 @@
 
 </body>
 <script type="module">
+
+
   import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.49.10/+esm'
   const supabase = createClient('https://jhqxioqnviaxdjlauyir.supabase.co', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpocXhpb3FudmlheGRqbGF1eWlyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDg4ODQ2MjksImV4cCI6MjA2NDQ2MDYyOX0.DAP7sLjxZCtbS-0G4c4brSda6wL2u9mC3QLBfKBXOUM')
 
@@ -157,11 +161,12 @@
   const ptoModal = document.querySelector('dialog#pto_request_dialog');
   const closePtoBtn = document.querySelector('#pto_request_btn_close');
   const submitBtn = document.querySelector('#btn_pto_submit_request');
+  const ptotable = document.querySelector('#ptotablebody');
 
   // ptoModal.showModal()
   openPtoBtn.addEventListener('click', () => {
     document.querySelector('#inpdate_leavedate').max = getLastDateOfMonthThreeMonthsFromToday();
-    document.querySelector('#inpdate_leavedate').min = '2025-06-29';
+    document.querySelector('#inpdate_leavedate').min = getPTOFormStartDate();
     ptoModal.showModal()
   });
   closePtoBtn.addEventListener('click', () => ptoModal.close())
@@ -170,21 +175,11 @@
 
 
   // close modal when clicking outside
-  ptoModal.addEventListener('click', event => { offsideModalClick(event) });
+  ptoModal.addEventListener('click', event => { offsideModalClick(ptoModal) });
 
 
-  function offsideModalClick(action) {
-    const rect = ptoModal.getBoundingClientRect();
-    const isInDialog =
-      event.clientX >= rect.left &&
-      event.clientX <= rect.right &&
-      event.clientY >= rect.top &&
-      event.clientY <= rect.bottom;
 
-    if (!isInDialog) {
-      ptoModal.close();
-    }
-  }
+
 
 
   async function sendPtoRequest() {
@@ -193,8 +188,10 @@
       leave_date: document.querySelector('#inpdate_leavedate').value,
       requested_by: 'testrequested@tdcx.com',
       requestee: 'testrequestee@tdcx.com',
-      status: 'APPROVED',
+      status: 'DENIED',
       pto_reason: document.querySelector('#textarea_ptoreason').value,
+      // cancelled_on:new Date,
+      status_remarks: 'No allocations left'
     }
     console.log(payload)
 
@@ -215,26 +212,106 @@
     let { data, error } = await supabase
       .from('db_pto_request')
       .select('*')
-    console.log(data)
+
+    return data
+  }
+
+
+  async function getUserData(useremail) {
+    let { data, error } = await supabase
+      .from('member_list')
+      .select()
+      .eq('email', useremail)
+
+
+    return data
   }
 
   function getLastDateOfMonthThreeMonthsFromToday() {
     const today = new Date();
     const targetDate = new Date(today.getFullYear(), today.getMonth() + 3 + 1, 0); // "+1" to move to next month, "0" to get last day of previous
-    return dateconverter(targetDate)
-  }
-
-//converts locale string to yyyy-mm-dd
-  function dateconverter(datevalue) {
-    let year = datevalue.toLocaleDateString().split("/")[2];
-    let month = datevalue.toLocaleDateString().split("/")[0].padStart(2, '0');
-    let day = datevalue.toLocaleDateString().split("/")[1].padStart(2, '0');
-    return `${year}-${month}-${day}`
+    return dateconvertyyyymmdd(targetDate);
   }
 
 
+  function getPTOFormStartDate() {
+    let startdate = new Date()
+    startdate.setDate(startdate.getDate() + 28);
+    return dateconvertyyyymmdd(startdate);
+  }
 
 
+  const currentuseremail = 'charmaine.argallon@tdcx.com'
+  verifyUser()
+  async function verifyUser() {
+    localStorage.clear()
+    let user = await getUserData(currentuseremail);
+    console.log(user[0]);
+    let userName = document.querySelector('#userdetails-name');
+    let userTier = document.querySelector('#userdetails-tier');
+    let userRole = document.querySelector('#userdetails-role');
+
+    userName.innerHTML = user[0].name;
+    userRole.innerHTML = user[0].role;
+    userTier.innerHTML = user[0].skill;
+
+  }
+
+
+
+  // async function updateTables() {
+  //   const response = await getPtoRequests();
+  //   const data = await response;
+
+  //   ptotable.innerHTML = ''
+
+  //   console.log(ptotable.innerHTML)
+  //   data.forEach(response =>{
+
+  //     if()
+  //     ptotable.innerHTML = ptotable.innerHTML +
+  //       `
+  //           <tr>
+  //             <td><input type="checkbox" name="" id="${response.transaction_id}"></td>
+  //             <td>${response.transaction_id}</td>
+  //             <td>${new Date(response.created_at).toLocaleString()}</td>
+  //             <td>${response.requested_by}</td>
+  //             <td>${response.requestee}</td>
+  //             <td>${response.leave_date}</td>
+  //             <td>${response.status}</td>
+  //             <td>${response.status_remarks}</td>
+  //             <td><button class="${response.transaction_id} btn-danger">Delete</button></td>
+  //           </tr>
+
+  //       `
+
+
+
+  //   })
+
+  // }updateTables()
+
+  //converts locale string to yyyy-mm-dd
+  function dateconvertyyyymmdd(datevalue) {
+    let month = (datevalue.getMonth() + 1).toString().padStart(2, '0')
+    let date = (datevalue.getDate()).toString().padStart(2, '0')
+    let year = datevalue.getFullYear()
+    return `${year}-${month}-${date}`
+  }
+
+  //gets offside ModalClick
+  function offsideModalClick(modal) {
+    const rect = modal.getBoundingClientRect();
+    const isInDialog =
+      event.clientX >= rect.left &&
+      event.clientX <= rect.right &&
+      event.clientY >= rect.top &&
+      event.clientY <= rect.bottom;
+
+    if (!isInDialog) {
+      modal.close();
+    }
+  }
 </script>
 
 </html>

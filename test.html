@@ -1,32 +1,36 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Document</title>
-  <style>
-table {
-  table-layout: fixed;
-  width: 100%;
-}
-
-td {
-  word-wrap: normal; /* for older browsers */
-  overflow-wrap: normal; /* for modern browsers */
-  white-space: normal;
-  overflow: hidden;
-  text-overflow: ellipsis; /* optional, adds "..." */
-}
-</style>
-
 </head>
+
 <body>
-  <table border="1">
-  <tr>
-    <td style="width: 200px;">
-      supercalifragilisticexpialidocioussupercalifragilisticexpialidocioussupercalifragilisticexpialidocious
-    </td>
-  </tr>
-</table>
+  <table>
+    <thead>
+      <tr>
+        <td>Head</td>
+      </tr>
+    </thead>
+    <tbody>
+      <tr name="test">
+        <td>
+          <button id="btn_delete">Delete</button>
+        </td>
+      </tr>
+    </tbody>
+  </table>
 </body>
+
+<script>
+  let doc = document.querySelector('#btn_delete')
+
+  doc.addEventListener('click',e=>{
+    console.log(e)
+  })
+
+</script>
+
 </html>

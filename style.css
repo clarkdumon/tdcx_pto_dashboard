@@ -59,14 +59,16 @@ dialog {
 body {
     display: flex;
     height: 100vh;
+    width: 100vw;
     background: var(--detailing-body-bg);
-    /* overflow: hidden; */
+    overflow: hidden;
 }
 
 .sidebar {
     display: flex;
     flex-direction: column;
-    width: 250px;
+    /* width: 250px; */
+    min-width: 250px;
     justify-content: end;
     align-items: center;
     border-right: 1px solid var(--detailing-body-border, 0.1);
@@ -114,131 +116,98 @@ body {
     cursor: pointer;
 }
 
-
-
 .content-area {
- width: 100%;
+    height: 100vh;
+    width: 100%;
 }
 
 .content-header {
-    padding: 15px;
+    height: 100px;
     display: flex;
     justify-content: space-between;
 }
 
-
-dialog#pto_request_dialog {
-    width: 35%;
-    height: 50%;
-    min-height: 350px;
-    min-width: 350px;
-    overflow: hidden;
-    padding: 1em;
-    border: none;
-    border-radius: 1em;
+.maincontent_wrapper{
+    padding: 25px;
 }
 
-dialog {
-  margin: auto;
-  padding: 2rem;
-  border: none;
-  border-radius: 6px;
-  opacity: 0;
-  transition: all 0.2s allow-discrete;
+.maincontent_wrapper h1{
+    font-size: 45px;
+    font-weight: 900;
 }
 
-dialog[open] {
-  opacity: 1;
-}
-
-@starting-style {
-  dialog[open] {
-    opacity: 0;
-  }
+.subcontent_wrapper{
+    padding: 25px;
 }
 
 
-dialog::backdrop {
-    background-color: rgba(0, 0, 0, 0);
-    transition: all 0.2s allow-discrete;
-}
 
-dialog[open]::backdrop {
-    background-color: rgba(0, 0, 0, 0.8);
-}
-
-.dialog-header {
-    position: relative;
-}
-
-.dialog-header span {
-    position: absolute;
-    right: -7.5px;
-    top: -7.5px;
-    cursor: default;
-    color: var(--detailing-main-danger-rgb);
-    opacity: 80%;
-}
-
-.dialog-form {
-    padding: 2em 1em;
+.table-area {
     display: flex;
+    min-width: 500px;
+    height: calc(100% - 100px);
     flex-direction: column;
-    gap: 5px;
+    justify-content: baseline;
 }
 
-.dialog-form #textarea_ptoreason {
-    width: 100%;
-    height: 100px;
-    resize: none;
-}
-
-
-button {
-  background: none;
-  border: none;
-  font: inherit;
-  cursor: pointer;
-}
-
-.btn-info {
-  background-color: var(--detailing-main-info-rgb);
-  color: white;
-  padding: 0.5rem 1rem;
-  border-radius: 6px;
-  font-weight: 500;
-}
-
-
-.table-area{
-    padding: 2em;
-display: flex;
-justify-content: center;
-}
-
-.table-wrapper{
-    width: 100%;
-    display: flex;
-    flex-direction: column;
+.table-wrapper {
     background: white;
-    border-radius: 6px;
-    justify-content: center;
+    margin: 20px;
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+    border-radius: 8px;
+    justify-content: baseline;
+    box-shadow: 0px 5px 5px 0px rgba(0, 0, 0, 0.25);
 }
 
-table{
-table-layout: auto;
+table *{
+    padding: 10px;
+    font-size: small;
+    font-family: "Noto Sans JP", sans-serif;
 }
 
-table td:nth-child(2){
-    width: 150px;
-    max-width: 150px;
+table {
+
+    width: auto;
+    margin: 25px;
+    border-collapse: collapse;
+    border-spacing: 20px 50px;
+}
+
+table caption{
+    font-size: large;
+    font-weight: 700;
+    text-align: left;
+    padding: 15px;
+}
+
+table tr{
+
+    border-bottom:1px solid rgba(0, 0, 0, .25);
+}
+
+table td , table th{
+    padding: 10px;
+    /* border: 1px solid black; */
+    text-align: center;
+
+}
+
+table td:nth-child(1),
+table th:nth-child(1) {
+    padding-right: 25px;
+}
+
+table td:nth-child(2), table th:nth-child(2){
+    width: 125px;
+    max-width: 125px;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
+    text-align: left;
     /* background:red; */
 }
-
-
 
 /* 
 .sidebar{
@@ -344,3 +313,95 @@ td.req-status-waitlist:hover{
     font-weight: bold;
     transition: 0.3s;
 } */
+
+
+dialog#pto_request_dialog {
+    width: 35%;
+    height: 50%;
+    min-height: 350px;
+    min-width: 350px;
+    overflow: hidden;
+    padding: 1em;
+    border: none;
+    border-radius: 1em;
+}
+
+dialog {
+    margin: auto;
+    padding: 2rem;
+    border: none;
+    border-radius: 6px;
+    opacity: 0;
+    transition: all 0.2s allow-discrete;
+}
+
+dialog[open] {
+    opacity: 1;
+}
+
+@starting-style {
+    dialog[open] {
+        opacity: 0;
+    }
+}
+
+dialog::backdrop {
+    background-color: rgba(0, 0, 0, 0);
+    transition: all 0.2s allow-discrete;
+}
+
+dialog[open]::backdrop {
+    background-color: rgba(0, 0, 0, 0.8);
+}
+
+.dialog-header {
+    position: relative;
+}
+
+.dialog-header span {
+    position: absolute;
+    right: -7.5px;
+    top: -7.5px;
+    cursor: default;
+    color: var(--detailing-main-danger-rgb);
+    opacity: 80%;
+}
+
+.dialog-form {
+    padding: 2em 1em;
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.dialog-form #textarea_ptoreason {
+    width: 100%;
+    height: 100px;
+    resize: none;
+}
+
+button{
+    border: none;
+}
+
+.btn-info-norm{
+    background: var(--detailing-main-primary-rgb);
+    color: white;
+    opacity: 80%;
+}
+
+.btn-info-norm:hover{
+    outline: 1px solid var(--detailing-main-primary-rgb);
+    outline-offset: 1px;
+    opacity: 100%;
+    box-shadow: 0px 0px 0px 0px rgba(0, 0, 0, 0);
+}
+
+.btn-big{
+    font-size: medium;
+    padding: 10px 16px 10px 16px;
+    border-radius: 8px;
+    text-align: center;
+    justify-content: center;
+    box-shadow: 0px 4px 4px 0px rgba(0, 0, 0, .25);
+}

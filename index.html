@@ -128,7 +128,7 @@
               <td></td>
               <td></td>
             </tr>
-                        <tr>
+            <tr>
               <td><input type="checkbox" name="" id=""></td>
               <td>17cb8cd5-4837-4a10-a8c6-56e1f3b9f1f3</td>
               <td>07/06/2025, 01:08:45</td>
@@ -221,8 +221,17 @@
   function getLastDateOfMonthThreeMonthsFromToday() {
     const today = new Date();
     const targetDate = new Date(today.getFullYear(), today.getMonth() + 3 + 1, 0); // "+1" to move to next month, "0" to get last day of previous
-    return `${targetDate.toLocaleDateString().split("/")[2]}-${targetDate.toLocaleDateString().split("/")[0].padStart(2,'0')}-${targetDate.toLocaleDateString().split("/")[1].padStart(2,'0')}`
+    return dateconverter(targetDate)
   }
+
+//converts locale string to yyyy-mm-dd
+  function dateconverter(datevalue) {
+    let year = datevalue.toLocaleDateString().split("/")[2];
+    let month = datevalue.toLocaleDateString().split("/")[0].padStart(2, '0');
+    let day = datevalue.toLocaleDateString().split("/")[1].padStart(2, '0');
+    return `${year}-${month}-${day}`
+  }
+
 
 
 

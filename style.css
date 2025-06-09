@@ -126,9 +126,6 @@ body {
     justify-content: space-between;
 }
 
-dialog#pto_request_dialog * {
-    /* outline: 1px solid blue; */
-}
 
 dialog#pto_request_dialog {
     width: 35%;

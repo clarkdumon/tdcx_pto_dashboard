@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Workforce Management Web App</title>
+</head>
+<link rel="stylesheet"
+  href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@48,400,1,0" />
+<!-- <link rel="stylesheet" href="style.css"> -->
+
+<body>
+
+  <div class="sidebar">
+    <div class="header-logo">
+      <h3>Workforce Management</h3>
+      <h4>Web App</h4>
+    </div>
+    <div class="sidebar-menu">
+      <div class="sidebar-menu-item">
+        <span class="material-symbols-rounded">dashboard</span>
+        <h3>Dashboard</h3>
+      </div>
+      <!-- <div class="sidebar-menu-item">
+        <span class="material-symbols-rounded">timer</span>
+        <h3>Wait list</h3>
+      </div>
+      <div class="sidebar-menu-item">
+        <span class="material-symbols-rounded">hub</span>
+        <h3>Allocation</h3>
+      </div> -->
+    </div>
+    <div class="sidebar-userdetails">
+      <div class="userdetails">
+        <h4 id="userdetails-name">Clark Laurent Dumon</h4>
+        <p id="userdetails-tier">Resolutions 1</p>
+        <p id="userdetails-role">Support Ambassador</p>
+      </div>
+      <div class="userhelp">
+        <span class="material-symbols-rounded">help</span>
+        <p>Help Center</p>
+      </div>
+    </div>
+  </div>
+  <div class="content-area">
+    <div class="content-header">
+      <div class="maincontent_wrapper">
+        <h1>Dashboard</h1>
+      </div>
+      <div class="subcontent_wrapper">
+        <button type="button" id="pto_request_btn" class="btn-info-norm btn-medium">Request PTO</button>
+        <dialog id="pto_request_dialog">
+          <div class="dialog-header">
+            <span class="material-symbols-rounded" id="pto_request_btn_close">cancel</span>
+            <h2>PTO Form</h2>
+          </div>
+          <div class="dialog-form">
+            <label for="inpdate_leavedate">Leave Date</label>
+            <input type="date" name="inpdate_leavedate" id="inpdate_leavedate">
+            <label for="textarea_ptoreason">PTO Reason</label>
+            <textarea name="textarea_ptoreason" id="textarea_ptoreason" placeholder="Reason of request"></textarea>
+            <button type="button" id="btn_pto_submit_request" class="btn-info-norm btn-medium">Submit Request</button>
+          </div>
+        </dialog>
+
+      </div>
+    </div>
+    <div class="table-area">
+      <div class="table-wrapper">
+        <table id='requested_pto_data'>
+          <caption>Requested PTO</caption>
+          <thead>
+            <tr>
+              <th><input type="checkbox" name="" id=""></th>
+              <th>Transaction ID</th>
+              <th>Timestamp</th>
+              <th>Sender</th>
+              <th>Recipient</th>
+              <th>Leave Date</th>
+              <th>Status</th>
+              <th>Remarks</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody id="ptotablebody">
+            <tr>
+              <td class="tbl-checkBox"><input type="checkbox" name="" id=""></td>
+              <td class="tbl-transactionID">17cb8cd5-4837-4a10-a8c6-56e1f3b9f1f3</td>
+              <td class="tbl-timestamp">07/06/2025, 01:08:45</td>
+              <td class="tbl-sender">testsender.sender@tdcx.com</td>
+              <td class="tbl-recipient">testrecipient.recipient@tdcx.com</td>
+              <td class="tbl-ptoDate">7/7/2025</td>
+              <td class="tbl-status">
+                <span class="tablestatus table-status-style-success">
+                  <span class="material-symbols-rounded">check_circle</span>
+                  Approved
+                </span>
+              </td>
+              <td class="tbl-statusRemarks"></td>
+              <td class="tbl-actionitems">
+                <button class="btn-danger">Delete</button>
+              </td>
+            </tr>
+            <tr>
+              <td><input type="checkbox" name="" id=""></td>
+              <td>17cb8cd5-4837-4a10-a8c6-56e1f3b9f1f3</td>
+              <td>07/06/2025, 01:08:45</td>
+              <td>testsender.sender@tdcx.com</td>
+              <td>testrecipient.recipient@tdcx.com</td>
+              <td>7/7/2025</td>
+              <td class="tbl-status">
+                <span class="tablestatus table-status-style-danger">
+                  <span class="material-symbols-rounded">cancel</span>
+                  Denied
+                </span>
+              </td>
+              <td></td>
+              <td></td>
+            </tr>
+            <tr>
+              <td><input type="checkbox" name="" id=""></td>
+              <td>17cb8cd5-4837-4a10-a8c6-56e1f3b9f1f3</td>
+              <td>07/06/2025, 01:08:45</td>
+              <td>testsender.sender@tdcx.com</td>
+              <td>testrecipient.recipient@tdcx.com</td>
+              <td>7/7/2025</td>
+              <td>
+                <span class="tablestatus table-status-style-cancelled">
+                  <span class="material-symbols-rounded">do_not_disturb_on</span>
+                  Cancelled
+                </span>
+              </td>
+              <td></td>
+              <td></td>
+            </tr>
+            <tr>
+              <td><input type="checkbox" name="" id=""></td>
+              <td>17cb8cd5-4837-4a10-a8c6-56e1f3b9f1f3</td>
+              <td>07/06/2025, 01:08:45</td>
+              <td>testsender.sender@tdcx.com</td>
+              <td>testrecipient.recipient@tdcx.com</td>
+              <td>7/7/2025</td>
+              <td>
+                <span class="tablestatus table-status-style-warning">
+                  <span class="material-symbols-rounded">schedule</span>
+                  Waitlisted
+                </span>
+              </td>
+              <td></td>
+              <td></td>
+            </tr>
+            <tr>
+              <td><input type="checkbox" name="" id=""></td>
+              <td>17cb8cd5-4837-4a10-a8c6-56e1f3b9f1f3</td>
+              <td>07/06/2025, 01:08:45</td>
+              <td>testsender.sender@tdcx.com</td>
+              <td>testrecipient.recipient@tdcx.com</td>
+              <td>7/7/2025</td>
+              <td>Pending</td>
+              <td></td>
+              <td></td>
+            </tr>
+          </tbody>
+        </table>
+        <div class="table-pagination">
+
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+</body>
+<script type="module">
+
+
+  import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.49.10/+esm'
+  const supabase = createClient('https://jhqxioqnviaxdjlauyir.supabase.co', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpocXhpb3FudmlheGRqbGF1eWlyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDg4ODQ2MjksImV4cCI6MjA2NDQ2MDYyOX0.DAP7sLjxZCtbS-0G4c4brSda6wL2u9mC3QLBfKBXOUM')
+
+
+  const openPtoBtn = document.querySelector('button#pto_request_btn');
+  const ptoModal = document.querySelector('dialog#pto_request_dialog');
+  const closePtoBtn = document.querySelector('#pto_request_btn_close');
+  const submitBtn = document.querySelector('#btn_pto_submit_request');
+  const ptotable = document.querySelector('#ptotablebody');
+
+  // ptoModal.showModal()
+  openPtoBtn.addEventListener('click', () => {
+    document.querySelector('#inpdate_leavedate').max = getLastDateOfMonthThreeMonthsFromToday();
+    document.querySelector('#inpdate_leavedate').min = getPTOFormStartDate();
+    ptoModal.showModal()
+    testpull()
+  });
+  closePtoBtn.addEventListener('click', () => ptoModal.close())
+  submitBtn.addEventListener('click', sendPtoRequest)
+
+
+
+  // close modal when clicking outside
+  ptoModal.addEventListener('click', event => { offsideModalClick(ptoModal) });
+
+
+
+
+
+
+  async function sendPtoRequest() {
+    let payload = {
+      created_at: new Date,
+      leave_date: document.querySelector('#inpdate_leavedate').value,
+      sender: currentuseremail,
+      recipient: currentuseremail,
+      status: 'DENIED',
+      pto_reason: document.querySelector('#textarea_ptoreason').value,
+      // cancelled_on:new Date,
+      status_remarks: 'No allocations left'
+    }
+    console.log(payload)
+
+    const { data, error } = await supabase
+      .from('db_pto_request')
+      .insert(payload)
+      .select()
+    console.log(data)
+    console.log(error)
+
+    if (error == null) {
+      ptoModal.close()
+    }
+    getPtoRequests()
+  }
+getPtoRequests()
+  async function getPtoRequests() {
+    let { data, error } = await supabase
+      .from('db_pto_request')
+      .select('*')
+      .order('created_at',{ascending:true})
+      .range(0,9)
+    console.log(data)
+
+    // localStorage.setItem('ptovalue', JSON.stringify(data))
+    return data
+  }
+
+
+  async function getUserData(useremail) {
+    let { data, error } = await supabase
+      .from('member_list')
+      .select()
+      .eq('email', useremail)
+    return data
+  }
+
+  function getLastDateOfMonthThreeMonthsFromToday() {
+    const today = new Date();
+    const targetDate = new Date(today.getFullYear(), today.getMonth() + 3 + 1, 0); // "+1" to move to next month, "0" to get last day of previous
+    return dateconvertyyyymmdd(targetDate);
+  }
+
+
+  function getPTOFormStartDate() {
+    let startdate = new Date()
+    startdate.setDate(startdate.getDate() + 28);
+    return dateconvertyyyymmdd(startdate);
+  }
+
+
+  const currentuseremail = 'charmaine.argallon@tdcx.com'
+  verifyUser()
+  async function verifyUser() {
+    localStorage.clear()
+    let user = await getUserData(currentuseremail);
+    console.log(user[0]);
+    let userName = document.querySelector('#userdetails-name');
+    let userTier = document.querySelector('#userdetails-tier');
+    let userRole = document.querySelector('#userdetails-role');
+
+    userName.innerHTML = user[0].name;
+    userRole.innerHTML = user[0].role;
+    userTier.innerHTML = user[0].skill;
+
+  }
+
+  function testpull(){
+    let x = localStorage.getItem('ptovalue')
+    console.log(JSON.parse(x))
+  }
+
+
+
+  async function updateTables() {
+    const response = await getPtoRequests();
+    const data = await response;
+
+    ptotable.innerHTML = ''
+
+    console.log(ptotable.innerHTML)
+    data.forEach(response =>{
+    
+    
+      // if()
+      ptotable.innerHTML = ptotable.innerHTML +
+        `
+            <tr>
+              <td><input type="checkbox" name="" id="${response.transaction_id}"></td>
+              <td>${response.transaction_id}</td>
+              <td>${new Date(response.created_at).toLocaleString()}</td>
+              <td>${response.sender}</td>
+              <td>${response.recipient}</td>
+              <td>${response.leave_date}</td>
+              <td>${response.status}</td>
+              <td>${response.status_remarks}</td>
+              <td><button class="${response.transaction_id} btn-danger">Delete</button></td>
+            </tr>
+
+        `
+
+
+
+    })
+
+  }updateTables()
+
+  //converts locale string to yyyy-mm-dd
+  function dateconvertyyyymmdd(datevalue) {
+    let month = (datevalue.getMonth() + 1).toString().padStart(2, '0')
+    let date = (datevalue.getDate()).toString().padStart(2, '0')
+    let year = datevalue.getFullYear()
+    return `${year}-${month}-${date}`
+  }
+
+  //gets offside ModalClick
+  function offsideModalClick(modal) {
+    const rect = modal.getBoundingClientRect();
+    const isInDialog =
+      event.clientX >= rect.left &&
+      event.clientX <= rect.right &&
+      event.clientY >= rect.top &&
+      event.clientY <= rect.bottom;
+
+    if (!isInDialog) {
+      modal.close();
+    }
+  }
+
+
+
+</script>
+
+</html>

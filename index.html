@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document</title>
+</head>
+<style>
+
+</style>
+<link rel="stylesheet"
+  href="https://fonts.googleapis.com/css2?family=Inter:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&amp;display=swap"
+  data-tag="font">
+<link rel="stylesheet" href="style.css">
+
+<body>
+
+  <div class="container">
+    <div class="sidebar">
+      <div class="sidebar-1">
+        <h2>Workforce Management</h2>
+      </div>
+      <div class="sidebar-2">
+        <ul>
+          <li class="sidebarmenu sidebarmenu-active">Dashboard</li>
+          <li class="sidebarmenu">Allocation</li>
+          <li class="sidebarmenu">Request</li>
+        </ul>
+      </div>
+      <div class="sidebar-3">
+        <span id="currentuser-name" data-email="clark.dumon@tdcx.com">Dumon, Clark Laurent</span>
+        <span id="currentuser-role-dept">Support - Workforce Management</span>
+        <span id="currentuser-tl">Dela Cerna, Sylvia</span>
+      </div>
+      <div class="sidebar-4">
+        <span>? Help Center</span>
+      </div>
+    </div>
+    <div class="contentarea">
+      <div class="uppercontent">
+        <div class="uppercontent-left">
+          <h1>Dashboard</h1>
+        </div>
+        <div class="uppercontent-right">
+          <button class="button btn-sendrequest">Send Request<button/>
+        </div>
+      </div>
+      <div class="lowercontent">
+        <div class="headercontent">
+          <h2>Requested PTO</h2>
+        </div>
+        <div class="table-content">
+          <table id='requested_pto_data'>
+            <thead>
+              <tr>
+                <th><input type="checkbox" name="" id=""></th>
+                <th>Transaction ID</th>
+                <th>Timestamp</th>
+                <th>Sender</th>
+                <th>Recipient</th>
+                <th>Leave Date</th>
+                <th>Status</th>
+                <th>Remarks</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody id="ptotablebody">
+              <tr>
+                <td class="tbl-checkBox"><input type="checkbox" name="" id=""></td>
+                <td class="tbl-transactionID">17cb8cd5-4837-4a10-a8c6-56e1f3b9f1f3</td>
+                <td class="tbl-timestamp">07/06/2025, 01:08:45</td>
+                <td class="tbl-sender">testsender.sender@tdcx.com</td>
+                <td class="tbl-recipient">testrecipient.recipient@tdcx.com</td>
+                <td class="tbl-ptoDate">7/7/2025</td>
+                <td class="tbl-status">
+                  <span class="tablestatus table-status-style-success">
+                    <span class="material-symbols-rounded">check_circle</span>
+                    Approved
+                  </span>
+                </td>
+                <td class="tbl-statusRemarks"></td>
+                <td class="tbl-actionitems">
+                  <button class="btn-danger">Delete</button>
+                </td>
+              </tr>
+              <tr>
+                <td><input type="checkbox" name="" id=""></td>
+                <td>17cb8cd5-4837-4a10-a8c6-56e1f3b9f1f3</td>
+                <td>07/06/2025, 01:08:45</td>
+                <td>testsender.sender@tdcx.com</td>
+                <td>testrecipient.recipient@tdcx.com</td>
+                <td>7/7/2025</td>
+                <td class="tbl-status">
+                  <span class="tablestatus table-status-style-danger">
+                    <span class="material-symbols-rounded">cancel</span>
+                    Denied
+                  </span>
+                </td>
+                <td></td>
+                <td></td>
+              </tr>
+              <tr>
+                <td><input type="checkbox" name="" id=""></td>
+                <td>17cb8cd5-4837-4a10-a8c6-56e1f3b9f1f3</td>
+                <td>07/06/2025, 01:08:45</td>
+                <td>testsender.sender@tdcx.com</td>
+                <td>testrecipient.recipient@tdcx.com</td>
+                <td>7/7/2025</td>
+                <td>
+                  <span class="tablestatus table-status-style-cancelled">
+                    <span class="material-symbols-rounded">do_not_disturb_on</span>
+                    Cancelled
+                  </span>
+                </td>
+                <td></td>
+                <td></td>
+              </tr>
+              <tr>
+                <td><input type="checkbox" name="" id=""></td>
+                <td>17cb8cd5-4837-4a10-a8c6-56e1f3b9f1f3</td>
+                <td>07/06/2025, 01:08:45</td>
+                <td>testsender.sender@tdcx.com</td>
+                <td>testrecipient.recipient@tdcx.com</td>
+                <td>7/7/2025</td>
+                <td>
+                  <span class="tablestatus table-status-style-warning">
+                    <span class="material-symbols-rounded">schedule</span>
+                    Waitlisted
+                  </span>
+                </td>
+                <td></td>
+                <td></td>
+              </tr>
+              <tr>
+                <td><input type="checkbox" name="" id=""></td>
+                <td>17cb8cd5-4837-4a10-a8c6-56e1f3b9f1f3</td>
+                <td>07/06/2025, 01:08:45</td>
+                <td>testsender.sender@tdcx.com</td>
+                <td>testrecipient.recipient@tdcx.com</td>
+                <td>7/7/2025</td>
+                <td>Pending</td>
+                <td></td>
+                <td></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="pagination">
+          <ul>
+            <li class="pagination-link">Prev</li>
+            <li class="pagination-link">1</li>
+            <li class="pagination-link">2</li>
+            <li class="pagination-link">3</li>
+            <li class="pagination-link">4</li>
+            <li class="pagination-link">5</li>
+            <li class="pagination-link">Next</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+
+
+</body>
+
+</html>

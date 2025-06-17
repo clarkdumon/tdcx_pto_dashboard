@@ -28,14 +28,14 @@
       <div class="sidebar-2">
         <ul>
           <li class="sidebarmenu sidebarmenu-active">Dashboard</li>
-          <li class="sidebarmenu">Allocation</li>
-          <li class="sidebarmenu">Request</li>
+          <!-- <li class="sidebarmenu">Allocation</li>
+          <li class="sidebarmenu">Request</li> -->
         </ul>
       </div>
       <div class="sidebar-3">
         <span id="currentuser-name" data-email="clark.dumon@tdcx.com">Dumon, Clark Laurent</span>
-        <span id="currentuser-role-dept">Support - Workforce Management</span>
-        <span id="currentuser-tl">Dela Cerna, Sylvia</span>
+        <span id="currentuser-role-shiftcode">Support Ambassador - AM</span>
+        <span id="currentuser-tier">Workforce Management</span>
       </div>
       <div class="sidebar-4">
         <span>? Help Center</span>
@@ -58,201 +58,23 @@
           <table id='requested_pto_data'>
             <thead>
               <tr>
-                <th><input type="checkbox" name="" id=""></th>
+                <!-- <th><input type="checkbox" name="" id=""></th> -->
                 <th>Transaction ID</th>
                 <th>Timestamp</th>
                 <th>Sender</th>
                 <th>Recipient</th>
                 <th>Leave Date</th>
                 <th>Status</th>
-                <th>Remarks</th>
+                <!-- <th>Remarks</th> -->
                 <th>Actions</th>
               </tr>
             </thead>
             <tbody id="ptotablebody">
-              <tr>
-                <td class="tbl-checkBox"><input type="checkbox" name="" id=""></td>
-                <td class="tbl-transactionID">17cb8cd5-4837-4a10-a8c6-56e1f3b9f1f3</td>
-                <td class="tbl-timestamp">07/06/2025, 01:08:45</td>
-                <td class="tbl-sender">testsender.sender@tdcx.com</td>
-                <td class="tbl-recipient">testrecipient.recipient@tdcx.com</td>
-                <td class="tbl-ptoDate">7/7/2025</td>
-                <td class="status-data">
-                  <span class="status approved">
-                    <span class="material-symbols-rounded status-icon">check_circle</span>
-                    <span>Approved</span>
-                  </span>
-                </td>
-                <td class="tbl-statusRemarks"></td>
-                <td class="tbl-actionitems">
-                  <span class="material-symbols-rounded action-icon cancel">delete_forever</span>
-                </td>
-              </tr>
-              <tr>
-                <td><input type="checkbox" name="" id=""></td>
-                <td>17cb8cd5-4837-4a10-a8c6-56e1f3b9f1f3</td>
-                <td>07/06/2025, 01:08:45</td>
-                <td>testsender.sender@tdcx.com</td>
-                <td>testrecipient.recipient@tdcx.com</td>
-                <td>7/7/2025</td>
-                <td class="status-data">
-                  <span class="status denied">
-                    <span class="material-symbols-rounded status-icon">cancel</span>
-                    <span>Denied</span>
-                  </span>
-                </td>
-                <td></td>
-                <td></td>
-              </tr>
-              <tr>
-                <td><input type="checkbox" name="" id=""></td>
-                <td>17cb8cd5-4837-4a10-a8c6-56e1f3b9f1f3</td>
-                <td>07/06/2025, 01:08:45</td>
-                <td>testsender.sender@tdcx.com</td>
-                <td>testrecipient.recipient@tdcx.com</td>
-                <td>7/7/2025</td>
-                <td class="status-data">
-                  <span class="status cancelled">
-                    <span class="material-symbols-rounded status-icon">do_not_disturb_on</span>
-                    <span>Cancelled</span>
-                  </span>
-                </td>
-                <td></td>
-                <td class="tbl-actionitems">
-                  <span class="material-symbols-rounded action-icon reinstate"
-                    title="reinstate">settings_backup_restore</span>
-                </td>
-              </tr>
-              <tr>
-                <td><input type="checkbox" name="" id=""></td>
-                <td>17cb8cd5-4837-4a10-a8c6-56e1f3b9f1f3</td>
-                <td>07/06/2025, 01:08:45</td>
-                <td>testsender.sender@tdcx.com</td>
-                <td>testrecipient.recipient@tdcx.com</td>
-                <td>7/7/2025</td>
-                <td class="status-data">
-                  <span class="status waitlisted">
-                    <span class="material-symbols-rounded status-icon">schedule</span>
-                    <span>Waitlisted</span>
-                  </span>
-                </td>
-                <td></td>
-                <td class="tbl-actionitems">
-                  <span class="material-symbols-rounded action-icon cancel">delete_forever</span>
-                </td>
-              </tr>
-              <tr>
-                <td><input type="checkbox" name="" id=""></td>
-                <td>17cb8cd5-4837-4a10-a8c6-56e1f3b9f1f3</td>
-                <td>07/06/2025, 01:08:45</td>
-                <td>testsender.sender@tdcx.com</td>
-                <td>testrecipient.recipient@tdcx.com</td>
-                <td>7/7/2025</td>
-                <td class="status-data">
-                  <span class="status waitlisted">
-                    <span class="material-symbols-rounded status-icon">schedule</span>
-                    <span>Waitlisted</span>
-                  </span>
-                </td>
-                <td></td>
-                <td class="tbl-actionitems">
-                  <span class="material-symbols-rounded action-icon cancel">delete_forever</span>
-                </td>
-              </tr>
-              <tr>
-                <td><input type="checkbox" name="" id=""></td>
-                <td>17cb8cd5-4837-4a10-a8c6-56e1f3b9f1f3</td>
-                <td>07/06/2025, 01:08:45</td>
-                <td>testsender.sender@tdcx.com</td>
-                <td>testrecipient.recipient@tdcx.com</td>
-                <td>7/7/2025</td>
-                <td class="status-data">
-                  <span class="status waitlisted">
-                    <span class="material-symbols-rounded status-icon">schedule</span>
-                    <span>Waitlisted</span>
-                  </span>
-                </td>
-                <td></td>
-                <td class="tbl-actionitems">
-                  <span class="material-symbols-rounded action-icon cancel">delete_forever</span>
-                </td>
-              </tr>
-              <tr>
-                <td><input type="checkbox" name="" id=""></td>
-                <td>17cb8cd5-4837-4a10-a8c6-56e1f3b9f1f3</td>
-                <td>07/06/2025, 01:08:45</td>
-                <td>testsender.sender@tdcx.com</td>
-                <td>testrecipient.recipient@tdcx.com</td>
-                <td>7/7/2025</td>
-                <td class="status-data">
-                  <span class="status waitlisted">
-                    <span class="material-symbols-rounded status-icon">schedule</span>
-                    <span>Waitlisted</span>
-                  </span>
-                </td>
-                <td></td>
-                <td class="tbl-actionitems">
-                  <span class="material-symbols-rounded action-icon cancel">delete_forever</span>
-                </td>
-              </tr>
-              <tr>
-                <td><input type="checkbox" name="" id=""></td>
-                <td>17cb8cd5-4837-4a10-a8c6-56e1f3b9f1f3</td>
-                <td>07/06/2025, 01:08:45</td>
-                <td>testsender.sender@tdcx.com</td>
-                <td>testrecipient.recipient@tdcx.com</td>
-                <td>7/7/2025</td>
-                <td class="status-data">
-                  <span class="status waitlisted">
-                    <span class="material-symbols-rounded status-icon">schedule</span>
-                    <span>Waitlisted</span>
-                  </span>
-                </td>
-                <td></td>
-                <td class="tbl-actionitems">
-                  <span class="material-symbols-rounded action-icon cancel">delete_forever</span>
-                </td>
-              </tr>
-              <tr>
-                <td><input type="checkbox" name="" id=""></td>
-                <td>17cb8cd5-4837-4a10-a8c6-56e1f3b9f1f3</td>
-                <td>07/06/2025, 01:08:45</td>
-                <td>testsender.sender@tdcx.com</td>
-                <td>testrecipient.recipient@tdcx.com</td>
-                <td>7/7/2025</td>
-                <td class="status-data">
-                  <span class="status waitlisted">
-                    <span class="material-symbols-rounded status-icon">schedule</span>
-                    <span>Waitlisted</span>
-                  </span>
-                </td>
-                <td></td>
-                <td class="tbl-actionitems">
-                  <span class="material-symbols-rounded action-icon cancel">delete_forever</span>
-                </td>
-              </tr>
-              <tr>
-                <td><input type="checkbox" name="" id=""></td>
-                <td>17cb8cd5-4837-4a10-a8c6-56e1f3b9f1f3</td>
-                <td>07/06/2025, 01:08:45</td>
-                <td>testsender.sender@tdcx.com</td>
-                <td>testrecipient.recipient@tdcx.com</td>
-                <td>7/7/2025</td>
-                <td class="status-data">
-                  <span class="status waitlisted">
-                    <span class="material-symbols-rounded status-icon">schedule</span>
-                    <span>Waitlisted</span>
-                  </span>
-                </td>
-                <td></td>
-                <td class="tbl-actionitems">
-                  <span class="material-symbols-rounded action-icon cancel">delete_forever</span>
-                </td>
-              </tr>
+              <td class="tbl-transactionID"><span class="loader"></span></td>
             </tbody>
           </table>
         </div>
-        <div class="pagination">
+        <div class="pagination" hidden>
           <ul>
             <li class="pagination-link">Prev</li>
             <li class="pagination-link">1</li>
@@ -277,10 +99,13 @@
     </div>
     <div id="modal-request-details" style="display: none;">
       <textarea name="textarea_ptoreason" id="textarea_ptoreason" placeholder="Reason of request"></textarea>
-      
+
     </div>
 
   </dialog>
+  <!-- Toast Notification HTML -->
+  <div id="toastBox"></div>
+  <!-- Toast Notification End -->
   <script src="script.js" type="module"></script>
 </body>
 

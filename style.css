@@ -192,11 +192,14 @@ body {
 }
 
 .btn-sendrequest {
-    background: gray;
+    display: block;
+    border: none;
+    background: var(--detailing-main-info-rgb);
     color: white;
-    opacity: 80%;
+    opacity: 75%;
     padding: 10px 20px;
     border-radius: 8px;
+    cursor: pointer;
 }
 
 .btn-sendrequest:hover {
@@ -206,7 +209,7 @@ body {
 .lowercontent {
     display: flex;
     flex-direction: column;
-    margin: 50px 25px 25px 25px;
+    margin: 25px 25px 25px 25px;
     flex: 1;
     justify-content: baseline;
     gap: 15px;
@@ -246,7 +249,9 @@ body {
 
 .box-table td {
     min-height: 50px;
-    padding: 20px 0;
+    padding: 10px;
+    text-align: center;
+    font-size: small;
 }
 
 .status-data {
@@ -328,6 +333,12 @@ body {
     }
 } */
 
+@starting-style {
+    #popup-modal[open] {
+        opacity: 0;
+    }
+}
+
 #popup-modal {
     box-sizing: border-box;
     border-radius: 12px;
@@ -337,8 +348,19 @@ body {
     flex-direction: column;
 }
 
+#popup-modal::backdrop {
+    background-color: rgba(0, 0, 0, 0);
+    transition: all 0.2s allow-discrete;
+}
+
+#popup-modal[open]::backdrop {
+    background-color: rgba(0, 0, 0, 0.8);
+}
+
 #modal-close {
-    padding: 3px 0px 0px 0px;
+    height: 26px;
+    width: 26px;
+    padding: 0px 0px 0px 1px;
     display: inline-block;
     position: absolute;
     right: 10px;
@@ -369,7 +391,7 @@ body {
     border-radius: 8px;
 }
 
-#modal-send-request textarea{
+#modal-send-request textarea {
     height: 150px;
     padding: 10px;
     border-radius: 8px;
@@ -378,3 +400,106 @@ body {
 #modal-request-details {
     margin: 25px;
 }
+
+#modal-send-request button {
+    display: block;
+    border: none;
+    background: var(--detailing-main-info-rgb);
+    color: white;
+    opacity: 75%;
+    padding: 10px 20px;
+    border-radius: 8px;
+    cursor: pointer;
+}
+
+#modal-send-request button:hover {
+    opacity: 100%;
+}
+
+#modal-send-request button:disabled {
+    background: gray;
+}
+
+/* Loader CSS */
+
+.loader {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    display: inline-block;
+    position: relative;
+    border: 10px solid;
+    border-color: var(--detailing-info-text-emphasis) rgba(255, 255, 255, 0.25)
+        rgba(255, 255, 255, 0.35) rgba(255, 255, 255, 0.5);
+    box-sizing: border-box;
+    animation: rotation 1s linear infinite;
+}
+
+@keyframes rotation {
+    0% {
+        transform: rotate(0deg);
+    }
+    100% {
+        transform: rotate(360deg);
+    }
+}
+
+/* Toast CSS Notification */
+#toastBox {
+    position: absolute;
+    bottom: 30px;
+    right: 30px;
+    display: flex;
+    align-items: flex-end;
+    flex-direction: column;
+    overflow: hidden;
+    padding: 10px;
+}
+
+.toast {
+    width: 400px;
+    /* height: 60px; */
+    font-weight: 500;
+    padding: 10px;
+    box-shadow: 0px 1px 5px rgba(0, 0, 0, 0.3);
+    display: flex;
+    gap: 5px;
+    align-items: center;
+    border-radius: 8px;
+    transform: translateY(100%);
+    animation: moveUp 0.3s linear forwards;
+    margin: 10px 0px;
+}
+
+@keyframes moveUp {
+    100%{
+        transform: translateY(0);
+    }
+    
+}
+
+.toast.success {
+    background: var(--detailing-success-bg-subtle);
+    border: 3px solid var(--detailing-success-text-emphasis);
+}
+.toast.success span{
+    color: var(--detailing-main-success-rgb);
+}
+
+.toast.danger {
+    background: var(--detailing-danger-bg-subtle);
+    border: 3px solid var(--detailing-danger-text-emphasis);
+}
+.toast.danger span{
+    color: var(--detailing-main-danger-rgb);
+}
+
+.toast.warning {
+    background: var(--detailing-warning-bg-subtle);
+    border: 3px solid var(--detailing-warning-text-emphasis);
+}
+.toast.warning span{
+    color: var(--detailing-main-warning-rgb);
+}
+
+/* Toast CSS Notification End */

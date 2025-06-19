@@ -33,9 +33,9 @@
         </ul>
       </div>
       <div class="sidebar-3">
-        <span id="currentuser-name" data-email="clark.dumon@tdcx.com">Dumon, Clark Laurent</span>
-        <span id="currentuser-role-shiftcode">Support Ambassador - AM</span>
-        <span id="currentuser-tier">Workforce Management</span>
+        <span id="currentuser-name" data-email="clark.dumon@tdcx.com"></span>
+        <span id="currentuser-skill-shiftcode-site"></span>
+        <span id="currentuser-role"></span>
       </div>
       <div class="sidebar-4">
         <span>? Help Center</span>
@@ -94,14 +94,10 @@
       <label for="inpdate_leavedate">Leave Date</label>
       <input type="date" name="inpdate_leavedate" id="inpdate_leavedate">
       <label for="textarea_ptoreason">PTO Reason</label>
-      <textarea name="textarea_ptoreason" id="textarea_ptoreason" placeholder="Reason of request"></textarea>
+      <textarea name="textarea_ptoreason" id="textarea_ptoreason" placeholder="Reason of request" maxlength="300"></textarea>
       <button type="button" id="btn_send_request" class="btn-info-norm btn-medium">Submit Request</button>
     </div>
-    <div id="modal-request-details" style="display: none;">
-      <textarea name="textarea_ptoreason" id="textarea_ptoreason" placeholder="Reason of request"></textarea>
-
-    </div>
-
+  <div id="toastBoxInner"></div>
   </dialog>
   <!-- Toast Notification HTML -->
   <div id="toastBox"></div>

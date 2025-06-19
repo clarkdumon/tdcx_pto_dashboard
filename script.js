@@ -1,40 +1,64 @@
+let user = document.getElementById("currentuser-name").dataset.email;
+let userDetails = document.getElementById("currentuser-name").dataset;
+
 import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.49.10/+esm";
 const supabase = createClient(
     "https://jhqxioqnviaxdjlauyir.supabase.co",
     "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpocXhpb3FudmlheGRqbGF1eWlyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDg4ODQ2MjksImV4cCI6MjA2NDQ2MDYyOX0.DAP7sLjxZCtbS-0G4c4brSda6wL2u9mC3QLBfKBXOUM"
 );
 
-// Constant Variables
-const toastDuration = 7 * 1000;
-const approvedPtoThreshold = 25;
+const dialogbox = document.querySelector("#popup-modal");
+const dialogboxCloseBtn = document.querySelector("#modal-close");
+const btnSendRequest = document.querySelector("#btnSendRequest");
 
+let userData = async (email) => {
+    try {
+        let reponse = await supabase
+            .from("member_list")
+            .select("*")
+            .eq("email", email);
+
+        if (!reponse.error) {
+            return reponse.data[0];
+        }
+    } catch (error) {}
+};
+
+// Constant Variables
+const toastDuration = 5 * 1000;
+const approvedPtoThreshold = 30;
+const ptoOpenStartDate = () => {
+    let openStartDate = new Date();
+    openStartDate.setDate(openStartDate.getDate() + 28);
+    openStartDate = formateDateyyyymmdd(openStartDate);
+    return openStartDate;
+};
+const ptoOpenEndDate = () => {
+    let openEndDate = new Date();
+    openEndDate.setDate(openEndDate.getDate() + 28 + 90);
+    openEndDate = formateDateyyyymmdd(openEndDate);
+    return openEndDate;
+};
 
 // Toast Notification Javascript
-function showToast(msg, status) {
-    let note = "";
-    if (status == "success") {
-        note = `<span class="material-symbols-rounded">check_circle</span> ${msg}`;
-    }
-    if (status == "danger") {
-        note = `<span class="material-symbols-rounded">error</span> ${msg}`;
-    }
+function showToast(message, status) {
+    const icons = {
+        success: "check_circle",
+        danger: "error",
+        warning: "warning",
+    };
+    const toast = document.createElement("div");
+    toast.className = `toast ${status}`;
+    toast.innerHTML = `<span class="material-symbols-rounded">${icons[status]}</span> ${message}`;
 
-    if (status == "warning") {
-        note = `<span class="material-symbols-rounded">warning</span> ${msg}`;
-    }
-    let toastBox = document.querySelector("#toastBox");
+    const toastBox = document.querySelector("#popup-modal").open
+        ? document.querySelector("#toastBoxInner")
+        : document.querySelector("#toastBox");
 
-    let toast = document.createElement("div");
-    toast.classList.add("toast");
-    toast.classList.add(status);
-    toast.innerHTML = note;
     toastBox.appendChild(toast);
-    setTimeout(() => {
-        toast.remove();
-    }, toastDuration);
-}// Toast Notification Javascript End
-
-
+    setTimeout(() => toast.remove(), toastDuration);
+}
+// Toast Notification Javascript End
 
 // Date Formatter : mm/dd/yyyy hh:mm:ss AM/PM
 function formatDatemmddyyyyhhmmampm(date) {
@@ -68,14 +92,7 @@ function formateDateyyyymmdd(datevalue) {
 }
 //Date Formatter End
 
-
-
-
-const dialogbox = document.querySelector("#popup-modal");
-const dialogboxCloseBtn = document.querySelector("#modal-close");
-const btnSendRequest = document.querySelector("#btnSendRequest");
 // const inpLeaveDate = document.querySelector("#inpdate_leavedate");
-const btnModalSendRequest = document.querySelector("#btn_send_request");
 
 // Event Listeners
 dialogbox.addEventListener("click", (event) => {
@@ -95,48 +112,9 @@ btnSendRequest.addEventListener("click", () => {
     btnModalSendRequest.disabled = false;
 });
 
-btnModalSendRequest.addEventListener("click", () => {
-    btnModalSendRequest.disabled = true;
-    sendPTOWorkflow();
-});
-
 // Test Calls for Functions
-// showToast("Success", "success");
-// showToast(
-//     "There is no available allocation for your requested dates. You have been added to the waitlist until the locking period or until a slot becomes available.",
-//     "warning"
-// );
-// showToast(
-//     `You have exceeded the allowed threshold of ${approvedPtoThreshold} approved leave requests.`,
-//     "danger"
-// );
-handlePTORequest();
-// ptoOpenStartDate();
-// ptoOpenEndDate();
-// pullmemberlist();
-// pullPTOlist();
-tableUpdate();
-// checkuser();
-// checkallocation()
-// dialogbox.showModal();
 
 // Needed Functions
-
-function ptoOpenStartDate() {
-    let openStartDate = new Date();
-    openStartDate.setDate(openStartDate.getDate() + 28);
-    openStartDate = formateDateyyyymmdd(openStartDate);
-    return openStartDate;
-}
-
-function ptoOpenEndDate() {
-    let openEndDate = new Date();
-    openEndDate.setDate(openEndDate.getDate() + 28 + 90);
-    openEndDate = formateDateyyyymmdd(openEndDate);
-    return openEndDate;
-}
-
-
 
 function offsideModalClick(modal) {
     const rect = modal.getBoundingClientRect();
@@ -147,7 +125,6 @@ function offsideModalClick(modal) {
         event.clientY <= rect.bottom;
 
     if (!isInDialog) {
-        console.log("offside close");
         modal.close();
     }
 }
@@ -159,45 +136,14 @@ async function pullmemberlist() {
 }
 
 async function pullPTOlist() {
-    let { data, error } = await supabase
-        .from("db_pto_request")
-        .select("*")
-        .eq("recipient", "clark.dumon@tdcx.com")
-        .order("leave_date", { ascending: false });
-    return data;
-}
-
-async function sendPTOWorkflow() {
-    let reqPTODate = document.querySelector("#inpdate_leavedate").value;
-    let reqPTOReason = document.querySelector("#textarea_ptoreason").value;
-    // console.log(reqPTODate,reqPTOReason)
-
-    let data = await pullPTOlist();
-
-    let pto = data.filter((ptodate) => {
-        // console.log(ptodate)
-
-        return reqPTODate == ptodate.leave_date;
-    });
-    if (pto.length != 0) {
-        console.log(pto);
-        dialogbox.close();
-        alert("You have already requested for these dates");
-    } else {
-        let allocation = checkallocation(reqPTODate);
-    }
-}
-
-async function checkallocation(reqPTODate) {
-    let { data, error } = await supabase
-        .from("db_allocation")
-        .select()
-        .eq("tier", "Resolutions 1")
-        .eq("shift_code", "AM")
-        .eq("site", "Cebu")
-        .eq("date", reqPTODate);
-
-    console.log(data);
+    try {
+        let { data, error } = await supabase
+            .from("db_pto_request")
+            .select("*")
+            .eq("recipient", user)
+            .order("leave_date", { ascending: false });
+        return data;
+    } catch (error) {}
 }
 
 async function tableUpdate() {
@@ -217,18 +163,22 @@ async function tableUpdate() {
                 )}</td>
                 <td class="tbl-sender">${dbData[i].sender}</td>
                 <td class="tbl-recipient">${dbData[i].recipient}</td>
-                <td class="tbl-ptoDate">${formatDatemmddyyyy(
+                <td class="tbl-leave_date">${formatDatemmddyyyy(
                     new Date(dbData[i].leave_date)
                 )}</td>
                 <td class="status-data">
                   ${status.status}
                 </td>
-                <td class="tbl-actionitems">
+                <td class="tbl-actionitems" data-transaction_id="${
+                    dbData[i].transaction_id
+                }">
                   ${status.action}
                 </td>
               </tr>`;
     }
     tableData.innerHTML = table;
+
+    actionItemListener();
 }
 
 function tableStatus(status) {
@@ -239,7 +189,7 @@ function tableStatus(status) {
                                 <span class="material-symbols-rounded status-icon">check_circle</span>
                                 <span>Approved</span>
                             </span>`;
-            detail.action = `<span class="material-symbols-rounded action-icon cancel">delete_forever</span>`;
+            detail.action = `<span class="material-symbols-rounded action-icon cancel" data-action="cancel">delete_forever</span>`;
             return detail;
             break;
         case "DENIED":
@@ -255,7 +205,7 @@ function tableStatus(status) {
                                 <span class="material-symbols-rounded status-icon">do_not_disturb_on</span>
                                 <span>Cancelled</span>
                             </span>`;
-            detail.action = `<span class="material-symbols-rounded action-icon reinstate" title="reinstate">settings_backup_restore</span>`;
+            detail.action = `<span class="material-symbols-rounded action-icon reinstate" data-action="reinstate" title="reinstate">settings_backup_restore</span>`;
             return detail;
             break;
         case "WAITLISTED":
@@ -263,181 +213,509 @@ function tableStatus(status) {
                                 <span class="material-symbols-rounded status-icon">schedule</span>
                                 <span>Waitlisted</span>
                             </span>`;
-            detail.action = `<span class="material-symbols-rounded action-icon cancel">delete_forever</span>`;
+            detail.action = `<span class="material-symbols-rounded action-icon cancel"  data-action="cancel">delete_forever</span>`;
             return detail;
             break;
     }
 }
 
+// Send PTO with Duplicate Checker
+const btnModalSendRequest = document.querySelector("#btn_send_request");
+btnModalSendRequest.addEventListener("click", () => {
+    btnModalSendRequest.disabled = true;
+    if (!formChecker()) {
+        sendPTOWorkflow();
+    }
+});
 
-
-
-
-async function checkuser() {
-    let { data, error } = await supabase
-        .from("member_list")
-        .select()
-        .eq("email", "clark.dumon@tdcx.com");
-
-    console.log(data[0]);
-}
-
-// DB Connections
 async function getPTOList() {
     let { data, error } = await supabase.from("db_pto_request").select();
     return { data, error };
 }
 
-async function getPTOAllocation() {
-    let { data, error } = await supabase.from("db_allocation").select();
-    return { data, error };
-}
-
-async function getApprovalCount() {
-    let { data, error } = await supabase.from("approved_count").select();
-    return { data, error };
-}
-
-// Send Request PTO
-async function handlePTORequest() {
-    
-    let ptoList = await getPTOList();
-    let allocation = await getPTOAllocation();
-    let approvalCount = await getApprovalCount();
-    let userDetails = {
-        email: "clark.dumon@tdcx.com",
-        tier: "Resolutions 1",
-        shift_code: "AM",
-        site: "Cebu",
-        ptoDate: "2025-07-25",
-        ptoReason: "User Generated Reason",
-    };
+async function sendPTOWorkflow() {
+    // let userDetails = await userData();
     let payload = {
-        transaction_id: "",
-        created_at: "",
-        leave_date: userDetails.ptoDate,
-        status: "",
-        cancelled_on: "",
-        status_remarks: "",
-        pto_reason: userDetails.ptoReason,
-        cancellation_remarks: "",
+        leave_date: document.querySelector("#inpdate_leavedate").value,
+        status: null,
+        cancelled_on: null,
+        status_remarks: null,
+        pto_reason: document.querySelector("#textarea_ptoreason").value,
+        cancellation_remarks: null,
         sender: userDetails.email,
         recipient: userDetails.email,
-        request_tier: userDetails.tier,
+        request_tier: userDetails.skill,
+        site: userDetails.site,
+        shift_code: userDetails.shift_code,
     };
-    console.log(payload);
 
-    let ptoHandle =  ptoHandler(ptoList, userDetails);
-    let allocationHandle =  allocationHandler(allocation, userDetails);
-    let countHandle =  approvedCountHandler(approvalCount, userDetails);
+    dbGETpto(payload);
 
-    console.log("********");
-    console.log("ptoHandle");
-    console.log(ptoHandle);
-    console.log("allocationHandle");
-    console.log(allocationHandle);
-    console.log("countHandle");
-    console.log(countHandle);
+    // let response = await checkDuplicatePTO(payload);
+    // console.log(response);
+    // // console.log(payload);
 
-    if (!ptoHandle.status) {
-        showToast(ptoHandle.remarks, "danger");
-        return;
-    }
-
-    if (!allocationHandle.status) {
-        showToast(allocationHandle.remarks, "warning");
-        payload.status = "WAITLISTED";
-        payload.status_remarks = allocationHandle.remarks;
-        console.log(payload)
-        return
-    }
-
-    if (!countHandle.status) {
-        showToast(countHandle.remarks, "danger");
-    }
+    // if (response.response == "update") {
+    //     sendPTOWorkflowUpdate(response.pto);
+    // } else if (response.response == "insert") {
+    //     sendPTOWorkflowInsert(payload);
+    // }
 }
-// Send Request PTO FN Check Duplicate Request, Check Duplicate if Cancelled
-function ptoHandler(ptoList, userDetails) {
-    let filteredPto = [];
-    if (!ptoList.error) {
-        ptoList.data.filter((pto) => {
-            if (
-                pto.recipient == userDetails.email &&
-                pto.leave_date == userDetails.ptoDate
-            ) {
-                filteredPto.push(pto);
-            }
-        });
-    }
 
-    if (filteredPto.length != 0) {
-        if (filteredPto[0].status != "CANCELLED") {
-            // showToast('Dates has already been requested','danger')
-            return {
-                status: false,
-                remarks: `Error: Duplicate leave date; Check requested leave`,
-                filteredPto,
-            };
-        } else {
-            return { status: true, remarks: ``, filteredPto };
-        }
+function formChecker() {
+    if (!isValidDate(document.querySelector("#inpdate_leavedate").value)) {
+        alert("Please enter a valid date.");
+        document.querySelector("#inpdate_leavedate").value = null;
+        btnModalSendRequest.disabled = false;
+        return true;
     } else {
-        return { status: true, remarks: ``, filteredPto };
+        if (
+            document.querySelector("#inpdate_leavedate").value <
+                ptoOpenStartDate() ||
+            document.querySelector("#inpdate_leavedate").value >
+                ptoOpenEndDate()
+        ) {
+            alert("Please enter dates that is currently open");
+            document.querySelector("#inpdate_leavedate").value = null;
+            btnModalSendRequest.disabled = false;
+            return true;
+        }
+        return false;
     }
 }
-// Send Request PTO FN Check Allocation not Zero[0]
-function allocationHandler(allocation, userDetails) {
-    let filteredAllocation = [];
-    if (!allocation.error) {
-        allocation.data.filter((allocation) => {
+
+function isValidDate(value) {
+    return value && !isNaN(new Date(value).getTime());
+}
+
+async function checkDuplicatePTO(payload) {
+    let response = await getPTOList();
+    let filteredResponse = null;
+
+    if (!response.error) {
+        response.data.filter((pto) => {
             if (
-                allocation.tier == userDetails.tier &&
-                allocation.shift_code == userDetails.shift_code &&
-                allocation.site == userDetails.site &&
-                allocation.date == userDetails.ptoDate
+                pto.recipient == payload.recipient &&
+                pto.leave_date == payload.leave_date
             ) {
-                filteredAllocation.push(allocation);
+                if (!(pto.status == "CANCELLED")) {
+                    filteredResponse = { response: `duplicate`, pto };
+                    showToast(
+                        `You have already requested for ${formatDatemmddyyyy(
+                            new Date(payload.leave_date)
+                        )}`,
+                        `danger`
+                    );
+                    document.querySelector("#inpdate_leavedate").value = null;
+                    btnModalSendRequest.disabled = false;
+                } else {
+                    filteredResponse = { response: `update`, pto };
+                    dialogbox.close();
+                }
             }
         });
     }
-
-    if (filteredAllocation.length != 0) {
-        if (!(filteredAllocation[0].remaining > 0)) {
-            return {
-                status: false,
-                remarks: `There is no available allocation for your requested dates. You have been added to the waitlist until the locking period or until a slot becomes available.`,
-                filteredAllocation,
-            };
-        } else {
-            return { status: true, remarks: ``, filteredAllocation };
-        }
+    if (!filteredResponse) {
+        filteredResponse = { response: `insert` };
+        dialogbox.close();
     }
-    return { status: false, remarks: ``, filteredAllocation };
+
+    return filteredResponse;
 }
-// Send Request PTO FN Check Approved Count if above threshold
-function approvedCountHandler(approvalCount, userDetails) {
-    let filteredApprovalCount = [];
-    if (!approvalCount.error) {
-        approvalCount.data.filter((count) => {
-            if (
-                count.email == userDetails.email &&
-                count.year == new Date(userDetails.ptoDate).getFullYear()
-            ) {
-                filteredApprovalCount.push(count);
-            }
+
+async function sendPTOWorkflowUpdate(payload) {
+    payload.cancelled_on = null;
+    payload.created_at = new Date();
+    payload.status = "WAITLISTED";
+
+    const { data, error } = await supabase
+        .from("db_pto_request")
+        .upsert(payload)
+        .eq("transaction_id", payload.transaction_id)
+        .select("*");
+
+    tableUpdate();
+    showToast(
+        `You have reinstated your leave request for ${formatDatemmddyyyy(
+            new Date(payload.leave_date)
+        )}`,
+        "success"
+    );
+}
+
+async function sendPTOWorkflowInsert(payload) {
+    payload.status = "WAITLISTED";
+    delete payload.shift_code;
+    delete payload.site;
+
+    const { data, error } = await supabase
+        .from("db_pto_request")
+        .insert([payload])
+        .select("*");
+
+    console.log(data);
+    console.log(error);
+    tableUpdate();
+    showToast(
+        `You have successfully requested a leave for ${formatDatemmddyyyy(
+            new Date(payload.leave_date)
+        )}`,
+        "success"
+    );
+}
+
+function actionItemListener() {
+    let c = document.querySelectorAll(".tbl-actionitems span");
+
+    c.forEach((actionitem) => {
+        actionitem.addEventListener("click", (e) => {
+            let transaction_id = e.target.parentElement.dataset.transaction_id;
+            let action = e.target.dataset.action;
+            actionItemClicked(transaction_id, action);
+            e.target.style.display = "none";
         });
-    }
+    });
+}
 
-    if (filteredApprovalCount != 0) {
-        if (filteredApprovalCount[0].approved_count >= approvedPtoThreshold) {
-            return {
-                status: false,
-                remarks: `You have exceeded the allowed threshold of ${approvedPtoThreshold} approved leave requests.`,
-                filteredApprovalCount,
-            };
-        } else {
-            return { status: true, remarks: ``, filteredApprovalCount };
+async function actionItemClicked(transaction_id, action) {
+    if (action == "cancel") {
+        let payload = null;
+        let { data, error } = await supabase
+            .from("db_pto_request")
+            .select("*")
+            .eq("transaction_id", transaction_id);
+
+        if (data.length > 0) {
+            payload = data[0];
+            console.log(payload);
+            payload.cancelled_on = new Date();
+            payload.status = "CANCELLED";
         }
-    }
-} // Send Request PTO End
+        let { canceldata, cancelerror } = await supabase
+            .from("db_pto_request")
+            .update(payload)
+            .select("*")
+            .eq("transaction_id", transaction_id);
+        tableUpdate();
+        showToast(
+            `You have cancelled your leave request on ${formatDatemmddyyyy(
+                new Date(payload.leave_date)
+            )}`,
+            "danger"
+        );
+    } else if (action == "reinstate") {
+        let payload = null;
+        let { data, error } = await supabase
+            .from("db_pto_request")
+            .select("*")
+            .eq("transaction_id", transaction_id);
 
+        if (data.length > 0) {
+            payload = data[0];
+            // console.log(payload);
+            payload.cancelled_on = null;
+            payload.status = "WAITLISTED";
+            payload.created_at = new Date();
+        }
+        let { reinstatedata, reinstateerror } = await supabase
+            .from("db_pto_request")
+            .update(payload)
+            .select("*")
+            .eq("transaction_id", transaction_id);
+        tableUpdate();
+        showToast(
+            `You have reinstated you leave request on ${formatDatemmddyyyy(
+                new Date(payload.leave_date)
+            )}`,
+            "success"
+        );
+    }
+}
+
+// On Initialization call functions
+updateUserDetails();
+tableUpdate();
+
+async function updateUserDetails() {
+    let user = document.getElementById("currentuser-name").dataset;
+    try {
+        let userDetails = await userData(user.email);
+        Object.keys(userDetails).forEach((element) => {
+            user[element] = userDetails[element];
+        });
+    } catch (error) {
+        btnSendRequest.disabled = true;
+        showToast(
+            "You are not an identified user, Please contact Workforce Mangement",
+            "danger"
+        );
+    }
+    document.querySelector("#currentuser-name").innerHTML = `${user.name}`;
+    document.querySelector(
+        "#currentuser-skill-shiftcode-site"
+    ).innerHTML = `${user.skill} - ${user.shift_code} - ${user.site}`;
+    document.querySelector("#currentuser-role").innerHTML = `${user.role}`;
+}
+
+async function sendPTO() {}
+
+async function dbGETpto(payload) {
+    // //DELETE AFTER TESTING
+    // payload = {
+    //     leave_date: "2025-7-30",
+    //     status: null,
+    //     cancelled_on: null,
+    //     status_remarks: null,
+    //     pto_reason: document.querySelector("#textarea_ptoreason").value,
+    //     cancellation_remarks: null,
+    //     sender: userDetails.email,
+    //     recipient: userDetails.email,
+    //     request_tier: userDetails.skill,
+    //     site: userDetails.site,
+    //     shift_code: userDetails.shift_code,
+    // };
+    // //DELETE AFTER TESTING ABOVE
+    try {
+        let query = supabase.from("db_pto_request").select();
+        const filters = {
+            leaveDate: payload.leave_date,
+            recipient: payload.recipient,
+        };
+
+        if (filters.leaveDate) {
+            query = query.eq("leave_date", filters.leaveDate);
+        }
+        if (filters.recipient) {
+            query = query.eq("recipient", filters.recipient);
+        }
+        query = query.neq("status", "CANCELLED");
+
+        let resPTO = await query;
+
+        if (resPTO.data.length === 0) {
+            let updatedPayload = await validateCancelled(payload);
+            dbGETAllocation(updatedPayload);
+        } else {
+            showToast(
+                `You’ve already submitted a PTO request for ${formatDatemmddyyyy(
+                    new Date(payload.leave_date)
+                )}. Please review your pending or approved requests before submitting another.`,
+                "danger"
+            );
+        }
+    } catch (error) {
+        showToast(
+            error + `Contact WFM and send a screenshot of the error`,
+            "danger"
+        );
+    }
+}
+
+async function dbGETAllocation(payload) {
+    try {
+        let query = supabase.from("db_allocation").select();
+        const filters = {
+            tier: payload.request_tier,
+            shift_code: payload.shift_code,
+            site: payload.site,
+            leave_date: payload.leave_date,
+        };
+        if (filters.tier) {
+            query = query.eq("tier", filters.tier);
+        }
+        if (filters.shift_code) {
+            query = query.eq("shift_code", filters.shift_code);
+        }
+        if (filters.site) {
+            query = query.eq("site", filters.site);
+        }
+        if (filters.leave_date) {
+            query = query.eq("date", filters.leave_date);
+        }
+
+        let resAlloc = await query;
+        if (!(resAlloc.data.length === 0)) {
+            if (resAlloc.data[0].remaining > 0) {
+                dbGETCount(payload, resAlloc.data[0]);
+            } else {
+                payload.status = "WAITLISTED";
+                showToast(
+                    `You have been added to the waitlist and will be notified if an allocation becomes avaiable for ${formatDatemmddyyyy(
+                        new Date(payload.leave_date)
+                    )}.`,
+                    `warning`
+                );
+                upsertPTO(payload);
+            }
+        } else {
+            showToast(
+                `Dates not available, Contact WFM for more info`,
+                `danger`
+            );
+        }
+
+        // console.log(resAlloc.data);
+    } catch (error) {
+        showToast(
+            error + `Contact WFM and send a screenshot of the error`,
+            "danger"
+        );
+    }
+}
+
+async function dbGETCount(payload, allocData) {
+    console.log(`dbGETCount`, payload, allocData);
+
+    try {
+        let query = supabase.from("db_approved_count").select();
+        const filters = {
+            email: payload.email,
+            year: new Date(payload.leave_date).getFullYear(),
+        };
+
+        if (filters.email) {
+            query = query.eq("tier", filters.tier);
+        }
+        if (filters.year) {
+            query = query.eq("year", filters.year);
+        }
+
+        let resCount = await query;
+
+        if (!(resCount.data.length === 0)) {
+            if (resCount.data[0].approved_count < approvedPtoThreshold) {
+                payload.status = "APPROVED";
+                dialogbox.close();
+                upsertPTO(payload);
+                dbUPDATEAllocation(allocData, "remove");
+                dbUPDATECount(resCount.data[0], "add");
+                showToast(`Your leave request has been approved.`, `success`);
+            } else {
+                payload.status = "DENIED";
+                upsertPTO(payload);
+                showToast(
+                    `The number of your approved leaves has reached the limit (${approvedPtoThreshold}). Please select another date or contact your supervisor for assistance`,
+                    `danger`
+                );
+            }
+        }
+    } catch (error) {
+        showToast(
+            error + `Contact WFM and send a screenshot of the error`,
+            "danger"
+        );
+    }
+}
+
+async function validateCancelled(payload) {
+    payload.pto_reason = "test pto reason";
+
+    try {
+        let query = supabase.from("db_pto_request").select();
+        const filters = {
+            leaveDate: payload.leave_date,
+            recipient: payload.recipient,
+        };
+
+        if (filters.leaveDate) {
+            query = query.eq("leave_date", filters.leaveDate);
+        }
+        if (filters.recipient) {
+            query = query.eq("recipient", filters.recipient);
+        }
+        query = query.eq("status", "CANCELLED");
+
+        let resCancelled = await query;
+
+        if (!(resCancelled.data.length === 0)) {
+            payload.created_at = new Date();
+            payload.sender = resCancelled.data[0].sender;
+            payload.transaction_id = resCancelled.data[0].transaction_id;
+            payload.pto_reason = `${resCancelled.data[0].pto_reason}/${new Date(
+                resCancelled.data[0].created_at
+            )}--${payload.pto_reason}/${payload.created_at}`;
+            return payload;
+        }
+        return payload;
+    } catch (error) {
+        showToast(
+            error + `Contact WFM and send a screenshot of the error`,
+            "danger"
+        );
+    }
+}
+
+async function upsertPTO(payload) {
+    if (payload.shift_code) {
+        delete payload.shift_code;
+    }
+    if (payload.site) {
+        delete payload.site;
+    }
+    try {
+        let query = supabase.from("db_pto_request").upsert(payload).select();
+
+        if (payload.transaction_id) {
+            query = query.eq("transaction_id", payload.transaction_id);
+        }
+
+        let resUpsert = await query;
+        tableUpdate();
+        console.log(resUpsert);
+    } catch (error) {
+        showToast(
+            error + `Contact WFM and send a screenshot of the error`,
+            "danger"
+        );
+    }
+}
+
+async function dbUPDATEAllocation(payload, operator) {
+    try {
+        if (operator === "remove") {
+            payload.remaining = --payload.remaining;
+            payload.approved = ++payload.approved;
+        } else {
+            payload.remaining = ++payload.remaining;
+            payload.approved = --payload.approved;
+        }
+        console.log(`dbUPDATEAllocation`, payload);
+        let query = supabase
+            .from("db_allocation")
+            .update(payload)
+            .eq("id", payload.id)
+            .select();
+
+        let resUPAllocation = await query;
+        console.log(`resUPAllocation`, resUPAllocation);
+    } catch (error) {
+        showToast(
+            error + `Contact WFM and send a screenshot of the error`,
+            "danger"
+        );
+    }
+}
+
+async function dbUPDATECount(payload, operator) {
+    try {
+        if (operator === "add") {
+            payload.approved_count = ++payload.approved_count;
+        } else {
+            payload.approved_count = --payload.approved_count;
+        }
+
+        console.log(`dbUPDATECount`, payload);
+        let query = supabase
+            .from("db_approved_count")
+            .update(payload)
+            .eq("id", payload.id)
+            .select();
+        let resUpCount = await query;
+        console.log("resUpCount", resUpCount);
+    } catch (error) {
+        showToast(
+            error + `Contact WFM and send a screenshot of the error`,
+            "danger"
+        );
+    }
+}

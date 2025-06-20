@@ -27,15 +27,21 @@ let userData = async (email) => {
 // Constant Variables
 const toastDuration = 5 * 1000;
 const approvedPtoThreshold = 30;
+const numberOfWeeksLocked = 2;
+const ptoDaysStartOffset = 28;
+const ptoDaysEndDateOffset = 90;
+
 const ptoOpenStartDate = () => {
     let openStartDate = new Date();
-    openStartDate.setDate(openStartDate.getDate() + 28);
+    openStartDate.setDate(openStartDate.getDate() + ptoDaysStartOffset);
     openStartDate = formateDateyyyymmdd(openStartDate);
     return openStartDate;
 };
 const ptoOpenEndDate = () => {
     let openEndDate = new Date();
-    openEndDate.setDate(openEndDate.getDate() + 28 + 90);
+    openEndDate.setDate(
+        openEndDate.getDate() + ptoDaysStartOffset + ptoDaysEndDateOffset
+    );
     openEndDate = formateDateyyyymmdd(openEndDate);
     return openEndDate;
 };
@@ -129,12 +135,6 @@ function offsideModalClick(modal) {
     }
 }
 
-async function pullmemberlist() {
-    localStorage.clear();
-    let { data, error } = await supabase.from("member_list").select("*");
-    localStorage.setItem("memberlist", JSON.stringify(data));
-}
-
 async function pullPTOlist() {
     try {
         let { data, error } = await supabase
@@ -153,7 +153,7 @@ async function tableUpdate() {
     let table = ``;
 
     for (let i = 0; i < dbData.length; i++) {
-        let status = tableStatus(dbData[i].status);
+        let status = tablestatusUpdate(dbData[i].status, dbData[i].leave_date);
         table += `<tr>
                     <td class="tbl-transactionID" title='${
                         dbData[i].transaction_id
@@ -166,57 +166,15 @@ async function tableUpdate() {
                 <td class="tbl-leave_date">${formatDatemmddyyyy(
                     new Date(dbData[i].leave_date)
                 )}</td>
-                <td class="status-data">
-                  ${status.status}
+                <td class="status-data">${status.status}
                 </td>
                 <td class="tbl-actionitems" data-transaction_id="${
                     dbData[i].transaction_id
-                }">
-                  ${status.action}
-                </td>
-              </tr>`;
+                }">${status.action}
+                </td></tr>`;
     }
     tableData.innerHTML = table;
-
     actionItemListener();
-}
-
-function tableStatus(status) {
-    let detail = {};
-    switch (status) {
-        case "APPROVED":
-            detail.status = `<span class="status approved">
-                                <span class="material-symbols-rounded status-icon">check_circle</span>
-                                <span>Approved</span>
-                            </span>`;
-            detail.action = `<span class="material-symbols-rounded action-icon cancel" data-action="cancel">delete_forever</span>`;
-            return detail;
-            break;
-        case "DENIED":
-            detail.status = `<span class="status denied">
-                                <span class="material-symbols-rounded status-icon">cancel</span>
-                                <span>Denied</span>
-                            </span>`;
-            detail.action = ``;
-            return detail;
-            break;
-        case "CANCELLED":
-            detail.status = `<span class="status cancelled">
-                                <span class="material-symbols-rounded status-icon">do_not_disturb_on</span>
-                                <span>Cancelled</span>
-                            </span>`;
-            detail.action = `<span class="material-symbols-rounded action-icon reinstate" data-action="reinstate" title="reinstate">settings_backup_restore</span>`;
-            return detail;
-            break;
-        case "WAITLISTED":
-            detail.status = `<span class="status waitlisted">
-                                <span class="material-symbols-rounded status-icon">schedule</span>
-                                <span>Waitlisted</span>
-                            </span>`;
-            detail.action = `<span class="material-symbols-rounded action-icon cancel"  data-action="cancel">delete_forever</span>`;
-            return detail;
-            break;
-    }
 }
 
 // Send PTO with Duplicate Checker
@@ -234,6 +192,7 @@ async function getPTOList() {
 }
 
 async function sendPTOWorkflow() {
+    console.log('sendPTOWorkflow')
     // let userDetails = await userData();
     let payload = {
         leave_date: document.querySelector("#inpdate_leavedate").value,
@@ -250,16 +209,6 @@ async function sendPTOWorkflow() {
     };
 
     dbGETpto(payload);
-
-    // let response = await checkDuplicatePTO(payload);
-    // console.log(response);
-    // // console.log(payload);
-
-    // if (response.response == "update") {
-    //     sendPTOWorkflowUpdate(response.pto);
-    // } else if (response.response == "insert") {
-    //     sendPTOWorkflowInsert(payload);
-    // }
 }
 
 function formChecker() {
@@ -288,150 +237,6 @@ function isValidDate(value) {
     return value && !isNaN(new Date(value).getTime());
 }
 
-async function checkDuplicatePTO(payload) {
-    let response = await getPTOList();
-    let filteredResponse = null;
-
-    if (!response.error) {
-        response.data.filter((pto) => {
-            if (
-                pto.recipient == payload.recipient &&
-                pto.leave_date == payload.leave_date
-            ) {
-                if (!(pto.status == "CANCELLED")) {
-                    filteredResponse = { response: `duplicate`, pto };
-                    showToast(
-                        `You have already requested for ${formatDatemmddyyyy(
-                            new Date(payload.leave_date)
-                        )}`,
-                        `danger`
-                    );
-                    document.querySelector("#inpdate_leavedate").value = null;
-                    btnModalSendRequest.disabled = false;
-                } else {
-                    filteredResponse = { response: `update`, pto };
-                    dialogbox.close();
-                }
-            }
-        });
-    }
-    if (!filteredResponse) {
-        filteredResponse = { response: `insert` };
-        dialogbox.close();
-    }
-
-    return filteredResponse;
-}
-
-async function sendPTOWorkflowUpdate(payload) {
-    payload.cancelled_on = null;
-    payload.created_at = new Date();
-    payload.status = "WAITLISTED";
-
-    const { data, error } = await supabase
-        .from("db_pto_request")
-        .upsert(payload)
-        .eq("transaction_id", payload.transaction_id)
-        .select("*");
-
-    tableUpdate();
-    showToast(
-        `You have reinstated your leave request for ${formatDatemmddyyyy(
-            new Date(payload.leave_date)
-        )}`,
-        "success"
-    );
-}
-
-async function sendPTOWorkflowInsert(payload) {
-    payload.status = "WAITLISTED";
-    delete payload.shift_code;
-    delete payload.site;
-
-    const { data, error } = await supabase
-        .from("db_pto_request")
-        .insert([payload])
-        .select("*");
-
-    console.log(data);
-    console.log(error);
-    tableUpdate();
-    showToast(
-        `You have successfully requested a leave for ${formatDatemmddyyyy(
-            new Date(payload.leave_date)
-        )}`,
-        "success"
-    );
-}
-
-function actionItemListener() {
-    let c = document.querySelectorAll(".tbl-actionitems span");
-
-    c.forEach((actionitem) => {
-        actionitem.addEventListener("click", (e) => {
-            let transaction_id = e.target.parentElement.dataset.transaction_id;
-            let action = e.target.dataset.action;
-            actionItemClicked(transaction_id, action);
-            e.target.style.display = "none";
-        });
-    });
-}
-
-async function actionItemClicked(transaction_id, action) {
-    if (action == "cancel") {
-        let payload = null;
-        let { data, error } = await supabase
-            .from("db_pto_request")
-            .select("*")
-            .eq("transaction_id", transaction_id);
-
-        if (data.length > 0) {
-            payload = data[0];
-            console.log(payload);
-            payload.cancelled_on = new Date();
-            payload.status = "CANCELLED";
-        }
-        let { canceldata, cancelerror } = await supabase
-            .from("db_pto_request")
-            .update(payload)
-            .select("*")
-            .eq("transaction_id", transaction_id);
-        tableUpdate();
-        showToast(
-            `You have cancelled your leave request on ${formatDatemmddyyyy(
-                new Date(payload.leave_date)
-            )}`,
-            "danger"
-        );
-    } else if (action == "reinstate") {
-        let payload = null;
-        let { data, error } = await supabase
-            .from("db_pto_request")
-            .select("*")
-            .eq("transaction_id", transaction_id);
-
-        if (data.length > 0) {
-            payload = data[0];
-            // console.log(payload);
-            payload.cancelled_on = null;
-            payload.status = "WAITLISTED";
-            payload.created_at = new Date();
-        }
-        let { reinstatedata, reinstateerror } = await supabase
-            .from("db_pto_request")
-            .update(payload)
-            .select("*")
-            .eq("transaction_id", transaction_id);
-        tableUpdate();
-        showToast(
-            `You have reinstated you leave request on ${formatDatemmddyyyy(
-                new Date(payload.leave_date)
-            )}`,
-            "success"
-        );
-    }
-}
-
 // On Initialization call functions
 updateUserDetails();
 tableUpdate();
@@ -457,9 +262,8 @@ async function updateUserDetails() {
     document.querySelector("#currentuser-role").innerHTML = `${user.role}`;
 }
 
-async function sendPTO() {}
-
 async function dbGETpto(payload) {
+    console.log('dbGETpto')
     // //DELETE AFTER TESTING
     // payload = {
     //     leave_date: "2025-7-30",
@@ -488,7 +292,7 @@ async function dbGETpto(payload) {
         if (filters.recipient) {
             query = query.eq("recipient", filters.recipient);
         }
-        query = query.neq("status", "CANCELLED");
+        query = query.or(`status.eq.CANCELLED`, `status.eq.DENIED`);
 
         let resPTO = await query;
 
@@ -496,6 +300,8 @@ async function dbGETpto(payload) {
             let updatedPayload = await validateCancelled(payload);
             dbGETAllocation(updatedPayload);
         } else {
+            document.querySelector("#inpdate_leavedate").value = null;
+            btnModalSendRequest.disabled = false;
             showToast(
                 `You’ve already submitted a PTO request for ${formatDatemmddyyyy(
                     new Date(payload.leave_date)
@@ -505,13 +311,14 @@ async function dbGETpto(payload) {
         }
     } catch (error) {
         showToast(
-            error + `Contact WFM and send a screenshot of the error`,
+            error + `<br><br>Contact WFM and send a screenshot of the error`,
             "danger"
         );
     }
 }
 
 async function dbGETAllocation(payload) {
+console.log('dbGETAllocation')
     try {
         let query = supabase.from("db_allocation").select();
         const filters = {
@@ -557,39 +364,46 @@ async function dbGETAllocation(payload) {
         // console.log(resAlloc.data);
     } catch (error) {
         showToast(
-            error + `Contact WFM and send a screenshot of the error`,
+            error + `<br><br>Contact WFM and send a screenshot of the error`,
             "danger"
         );
     }
 }
 
 async function dbGETCount(payload, allocData) {
-    console.log(`dbGETCount`, payload, allocData);
+    console.log('dbGETCount')
+    console.log(`dbGETCount`, `Payload`, payload, `allocation data`, allocData);
 
     try {
         let query = supabase.from("db_approved_count").select();
         const filters = {
-            email: payload.email,
+            email: payload.recipient,
             year: new Date(payload.leave_date).getFullYear(),
         };
 
         if (filters.email) {
-            query = query.eq("tier", filters.tier);
+            query = query.eq("email", filters.email);
         }
         if (filters.year) {
             query = query.eq("year", filters.year);
         }
 
         let resCount = await query;
-
+        console.log(`resCount`, resCount);
         if (!(resCount.data.length === 0)) {
+            //
             if (resCount.data[0].approved_count < approvedPtoThreshold) {
                 payload.status = "APPROVED";
                 dialogbox.close();
                 upsertPTO(payload);
                 dbUPDATEAllocation(allocData, "remove");
                 dbUPDATECount(resCount.data[0], "add");
-                showToast(`Your leave request has been approved.`, `success`);
+                showToast(
+                    `Your leave request has been approved for ${formatDatemmddyyyy(
+                        new Date(payload.leave_date)
+                    )}.`,
+                    `success`
+                );
             } else {
                 payload.status = "DENIED";
                 upsertPTO(payload);
@@ -598,16 +412,31 @@ async function dbGETCount(payload, allocData) {
                     `danger`
                 );
             }
+        } else {
+            // When user is not found in Approved Count
+            // Create a new row in db_approved_count
+            // Create new payload
+            let newApprovedCountPayload = {
+                email: payload.recipient,
+                year: new Date(payload.leave_date).getFullYear(),
+                approved_count: 0,
+            };
+            dialogbox.close();
+            payload.status = "APPROVED";
+            dbUPDATEAllocation(allocData, "remove");
+            dbUPDATECount(newApprovedCountPayload, "add");
+            upsertPTO(payload);
         }
     } catch (error) {
         showToast(
-            error + `Contact WFM and send a screenshot of the error`,
+            error + `<br><br>Contact WFM and send a screenshot of the error`,
             "danger"
         );
     }
 }
 
 async function validateCancelled(payload) {
+    console.log('validateCancelled')
     payload.pto_reason = "test pto reason";
 
     try {
@@ -631,9 +460,16 @@ async function validateCancelled(payload) {
             payload.created_at = new Date();
             payload.sender = resCancelled.data[0].sender;
             payload.transaction_id = resCancelled.data[0].transaction_id;
-            payload.pto_reason = `${resCancelled.data[0].pto_reason}/${new Date(
-                resCancelled.data[0].created_at
-            )}--${payload.pto_reason}/${payload.created_at}`;
+            if (payload.pto_reason == resCancelled.data[0].pto_reason) {
+                payload.pto_reason = resCancelled.data[0].pto_reason;
+            } else {
+                payload.pto_reason = `${
+                    resCancelled.data[0].pto_reason
+                }/${new Date(resCancelled.data[0].created_at)}--${
+                    payload.pto_reason
+                }/${payload.created_at}`;
+            }
+
             return payload;
         }
         return payload;
@@ -646,6 +482,7 @@ async function validateCancelled(payload) {
 }
 
 async function upsertPTO(payload) {
+    console.log("upsertPTO");
     if (payload.shift_code) {
         delete payload.shift_code;
     }
@@ -664,13 +501,14 @@ async function upsertPTO(payload) {
         console.log(resUpsert);
     } catch (error) {
         showToast(
-            error + `Contact WFM and send a screenshot of the error`,
+            error + `<br><br>Contact WFM and send a screenshot of the error`,
             "danger"
         );
     }
 }
 
 async function dbUPDATEAllocation(payload, operator) {
+    console.log("dbUPDATEAllocation");
     try {
         if (operator === "remove") {
             payload.remaining = --payload.remaining;
@@ -690,13 +528,15 @@ async function dbUPDATEAllocation(payload, operator) {
         console.log(`resUPAllocation`, resUPAllocation);
     } catch (error) {
         showToast(
-            error + `Contact WFM and send a screenshot of the error`,
+            error + `<br><br>Contact WFM and send a screenshot of the error`,
             "danger"
         );
     }
 }
 
 async function dbUPDATECount(payload, operator) {
+    console.log("dbUPDATECount");
+
     try {
         if (operator === "add") {
             payload.approved_count = ++payload.approved_count;
@@ -707,15 +547,126 @@ async function dbUPDATECount(payload, operator) {
         console.log(`dbUPDATECount`, payload);
         let query = supabase
             .from("db_approved_count")
-            .update(payload)
+            .upsert(payload)
             .eq("id", payload.id)
             .select();
         let resUpCount = await query;
         console.log("resUpCount", resUpCount);
     } catch (error) {
         showToast(
-            error + `Contact WFM and send a screenshot of the error`,
+            error + `<br><br>Contact WFM and send a screenshot of the error`,
             "danger"
         );
     }
+}
+
+async function actionReinstate(transaction_id) {
+    console.log("actionReinstate");
+
+    try {
+        let getReinstatePayload = await supabase
+            .from("db_pto_request")
+            .select(`*`)
+            .eq(`transaction_id`, transaction_id);
+        console.log(`getReinstatePayload`, getReinstatePayload.data[0]);
+        dbGETpto(getReinstatePayload.data[0]);
+    } catch (error) {}
+}
+
+function tablestatusUpdate(status, leave_date) {
+    const icons = {
+        APPROVED: ["approved", "check_circle", "Approved"],
+        DENIED: ["denied", "cancel", "Denied"],
+        CANCELLED: ["cancelled", "do_not_disturb_on", "Cancelled"],
+        WAITLISTED: ["waitlisted", "schedule", "Waitlisted"],
+    };
+
+    if (status === "APPROVED" || status === "WAITLISTED") {
+        icons[status].push(lockDateforCancellation(leave_date));
+    } else {
+        icons[status].push(lockDateToReinstate(leave_date));
+    }
+
+    const [className, icon, label, showAction] = icons[status] || [];
+
+    return {
+        status: `<span class="status ${className}"><span class="material-symbols-rounded status-icon">${icon}</span><span>${label}</span></span>`,
+        action: showAction
+            ? `<span class="material-symbols-rounded action-icon ${
+                  status === "CANCELLED" || status === "DENIED"
+                      ? "reinstate"
+                      : "cancel"
+              }" data-action="${
+                  status === "CANCELLED" || status === "DENIED"
+                      ? "reinstate"
+                      : "cancel"
+              }">${
+                  status === "CANCELLED" || status === "DENIED"
+                      ? "settings_backup_restore"
+                      : "delete_forever"
+              }</span>`
+            : "",
+    };
+}
+
+function lockDateforCancellation(leave_date) {
+    //Checks if the leave is still available to cancellation
+    //Cancellation of PTO should ${numberOfWeeksLocked} weeks prior
+    //Ex.
+    //  this week =  2025-06-15
+    //  dates that can be retracted = 2025-06-29 onwards
+    //  dates below 2025-06-29 cannot be cancelled or reinstated
+    //
+    // Q: Is date already locked? yes:True, no:False
+    const today = new Date();
+    const dayOfWeek = today.getDay();
+    const lockDate = new Date(formateDateyyyymmdd(today));
+    lockDate.setDate(
+        today.getDate() - dayOfWeek + (numberOfWeeksLocked * 7 - 1)
+    );
+
+    const inputDate = new Date(leave_date);
+    const validator = inputDate - lockDate;
+
+    return validator > 0;
+}
+
+function lockDateToReinstate(leave_date) {
+    //Checks if the leave is still available to reinstate
+    //Leave is avaiable to reinstate if date is not passed ${ptoOpenStartDate()}
+    // Q: Is date already locked? yes:True, no:False
+
+    let checkdate = new Date(leave_date);
+    let paramdate = new Date(ptoOpenStartDate());
+    let validator = checkdate - paramdate;
+    return validator >= 0;
+}
+
+// ACTION ITEM LISTENER
+
+function actionItemListener() {
+    let c = document.querySelectorAll(".tbl-actionitems span");
+
+    c.forEach((actionitem) => {
+        actionitem.addEventListener("click", (e) => {
+            e.target.style.display = "none";
+            let transaction_id = e.target.parentElement.dataset.transaction_id;
+            let action = e.target.dataset.action;
+
+            if (action === "cancel") {
+                actionCancel(transaction_id);
+            } else if (action === "reinstate") {
+                actionReinstate(transaction_id);
+            } else {
+                showToast(
+                    `Action not recognized.``<br><br>Contact WFM and send a screenshot of the error`,
+                    "danger"
+                );
+            }
+        });
+    });
+}
+
+function actionCancel(transaction_id) {
+    console.log("actionCancel");
 }

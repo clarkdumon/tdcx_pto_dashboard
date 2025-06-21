@@ -593,9 +593,9 @@ async function actionFormSend() {
     dbGETpto(payload);
 }
 
-async function actionReinstate(transaction_id) {
+async function actionReinstate(transaction_id, pto_reason) {
     console.log("actionReinstate");
-
+    pto_reason = pto_reason ? pto_reason : ``;
     try {
         let db_pto_request;
         let queryReinstate = await supabase
@@ -611,6 +611,7 @@ async function actionReinstate(transaction_id) {
         db_pto_request.cancellation_remarks = null;
         db_pto_request.sender = userDetails.email;
         db_pto_request.created_at = new Date();
+        db_pto_request.pto_reason += pto_reason;
 
         let allocation = await get_db_allocation(db_pto_request, OPERATOR.ADD);
         let approved_count = await get_db_approval_count(
@@ -689,61 +690,6 @@ async function actionCancel(transaction_id, cancellation_remarks) {
     }
 }
 
-async function update_db_pto_request(payload) {
-    //This updates db_pto request database
-
-    console.log("upsertPTO");
-
-    try {
-        let query = supabase.from("db_pto_request").upsert(payload).select();
-
-        if (payload.transaction_id) {
-            query = query.eq("transaction_id", payload.transaction_id);
-        }
-
-        let resUpsert = await query;
-        tableUpdate();
-        console.log(resUpsert);
-    } catch (error) {
-        showToast(
-            error + `<br><br>Contact WFM and send a screenshot of the error`,
-            "danger"
-        );
-    }
-}
-
-async function update_db_allocations(payload) {
-    //This updates db_allocation
-    try {
-        let { data, error } = await supabase
-            .from(`db_allocation`)
-            .upsert(payload)
-            .eq("id", payload.id)
-            .select(`*`);
-
-        console.log(`update_allocations`, data);
-        return data;
-    } catch (error) {
-        console.error("Error: in update_db_allocation");
-        console.log(`%c ${error}`, `color:red`);
-        showToast(
-            error + `<br><br>Contact WFM and send a screenshot of the error`,
-            "danger"
-        );
-    }
-}
-
-async function update_db_approved_count(payload) {
-    let { data, error } = await supabase
-        .from(`db_approved_count`)
-        .upsert(payload)
-        .eq("id", payload.id)
-        .select(`*`);
-
-    console.log(`update_approved_count`, data);
-    return data;
-}
-
 async function get_db_allocation(payload, operator) {
     try {
         let db_allocation;
@@ -815,6 +761,61 @@ async function get_db_approval_count(payload, operator) {
             "danger"
         );
     }
+}
+
+async function update_db_pto_request(payload) {
+    //This updates db_pto request database
+
+    console.log("upsertPTO");
+
+    try {
+        let query = supabase.from("db_pto_request").upsert(payload).select();
+
+        if (payload.transaction_id) {
+            query = query.eq("transaction_id", payload.transaction_id);
+        }
+
+        let resUpsert = await query;
+        tableUpdate();
+        console.log(resUpsert);
+    } catch (error) {
+        showToast(
+            error + `<br><br>Contact WFM and send a screenshot of the error`,
+            "danger"
+        );
+    }
+}
+
+async function update_db_allocations(payload) {
+    //This updates db_allocation
+    try {
+        let { data, error } = await supabase
+            .from(`db_allocation`)
+            .upsert(payload)
+            .eq("id", payload.id)
+            .select(`*`);
+
+        console.log(`update_allocations`, data);
+        return data;
+    } catch (error) {
+        console.error("Error: in update_db_allocation");
+        console.log(`%c ${error}`, `color:red`);
+        showToast(
+            error + `<br><br>Contact WFM and send a screenshot of the error`,
+            "danger"
+        );
+    }
+}
+
+async function update_db_approved_count(payload) {
+    let { data, error } = await supabase
+        .from(`db_approved_count`)
+        .upsert(payload)
+        .eq("id", payload.id)
+        .select(`*`);
+
+    console.log(`update_approved_count`, data);
+    return data;
 }
 
 //Init

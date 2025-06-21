@@ -182,34 +182,9 @@ const btnModalSendRequest = document.querySelector("#btn_send_request");
 btnModalSendRequest.addEventListener("click", () => {
     btnModalSendRequest.disabled = true;
     if (!formChecker()) {
-        sendPTOWorkflow();
+        actionFormSend();
     }
 });
-
-async function getPTOList() {
-    let { data, error } = await supabase.from("db_pto_request").select();
-    return { data, error };
-}
-
-async function sendPTOWorkflow() {
-    console.log('sendPTOWorkflow')
-    // let userDetails = await userData();
-    let payload = {
-        leave_date: document.querySelector("#inpdate_leavedate").value,
-        status: null,
-        cancelled_on: null,
-        status_remarks: null,
-        pto_reason: document.querySelector("#textarea_ptoreason").value,
-        cancellation_remarks: null,
-        sender: userDetails.email,
-        recipient: userDetails.email,
-        request_tier: userDetails.skill,
-        site: userDetails.site,
-        shift_code: userDetails.shift_code,
-    };
-
-    dbGETpto(payload);
-}
 
 function formChecker() {
     if (!isValidDate(document.querySelector("#inpdate_leavedate").value)) {
@@ -237,10 +212,6 @@ function isValidDate(value) {
     return value && !isNaN(new Date(value).getTime());
 }
 
-// On Initialization call functions
-updateUserDetails();
-tableUpdate();
-
 async function updateUserDetails() {
     let user = document.getElementById("currentuser-name").dataset;
     try {
@@ -263,7 +234,7 @@ async function updateUserDetails() {
 }
 
 async function dbGETpto(payload) {
-    console.log('dbGETpto')
+    console.log("dbGETpto");
     // //DELETE AFTER TESTING
     // payload = {
     //     leave_date: "2025-7-30",
@@ -318,7 +289,7 @@ async function dbGETpto(payload) {
 }
 
 async function dbGETAllocation(payload) {
-console.log('dbGETAllocation')
+    console.log("dbGETAllocation");
     try {
         let query = supabase.from("db_allocation").select();
         const filters = {
@@ -352,7 +323,7 @@ console.log('dbGETAllocation')
                     )}.`,
                     `warning`
                 );
-                upsertPTO(payload);
+                update_db_pto_request(payload);
             }
         } else {
             showToast(
@@ -371,7 +342,7 @@ console.log('dbGETAllocation')
 }
 
 async function dbGETCount(payload, allocData) {
-    console.log('dbGETCount')
+    console.log("dbGETCount");
     console.log(`dbGETCount`, `Payload`, payload, `allocation data`, allocData);
 
     try {
@@ -395,9 +366,9 @@ async function dbGETCount(payload, allocData) {
             if (resCount.data[0].approved_count < approvedPtoThreshold) {
                 payload.status = "APPROVED";
                 dialogbox.close();
-                upsertPTO(payload);
-                dbUPDATEAllocation(allocData, "remove");
-                dbUPDATECount(resCount.data[0], "add");
+                update_db_pto_request(payload);
+                update_db_allocation(allocData, "remove");
+                update_db_approval_count(resCount.data[0], "add");
                 showToast(
                     `Your leave request has been approved for ${formatDatemmddyyyy(
                         new Date(payload.leave_date)
@@ -406,7 +377,7 @@ async function dbGETCount(payload, allocData) {
                 );
             } else {
                 payload.status = "DENIED";
-                upsertPTO(payload);
+                update_db_pto_request(payload);
                 showToast(
                     `The number of your approved leaves has reached the limit (${approvedPtoThreshold}). Please select another date or contact your supervisor for assistance`,
                     `danger`
@@ -423,9 +394,9 @@ async function dbGETCount(payload, allocData) {
             };
             dialogbox.close();
             payload.status = "APPROVED";
-            dbUPDATEAllocation(allocData, "remove");
-            dbUPDATECount(newApprovedCountPayload, "add");
-            upsertPTO(payload);
+            update_db_allocation(allocData, "remove");
+            update_db_approval_count(newApprovedCountPayload, "add");
+            update_db_pto_request(payload);
         }
     } catch (error) {
         showToast(
@@ -436,7 +407,7 @@ async function dbGETCount(payload, allocData) {
 }
 
 async function validateCancelled(payload) {
-    console.log('validateCancelled')
+    console.log("validateCancelled");
     payload.pto_reason = "test pto reason";
 
     try {
@@ -479,98 +450,6 @@ async function validateCancelled(payload) {
             "danger"
         );
     }
-}
-
-async function upsertPTO(payload) {
-    console.log("upsertPTO");
-    if (payload.shift_code) {
-        delete payload.shift_code;
-    }
-    if (payload.site) {
-        delete payload.site;
-    }
-    try {
-        let query = supabase.from("db_pto_request").upsert(payload).select();
-
-        if (payload.transaction_id) {
-            query = query.eq("transaction_id", payload.transaction_id);
-        }
-
-        let resUpsert = await query;
-        tableUpdate();
-        console.log(resUpsert);
-    } catch (error) {
-        showToast(
-            error + `<br><br>Contact WFM and send a screenshot of the error`,
-            "danger"
-        );
-    }
-}
-
-async function dbUPDATEAllocation(payload, operator) {
-    console.log("dbUPDATEAllocation");
-    try {
-        if (operator === "remove") {
-            payload.remaining = --payload.remaining;
-            payload.approved = ++payload.approved;
-        } else {
-            payload.remaining = ++payload.remaining;
-            payload.approved = --payload.approved;
-        }
-        console.log(`dbUPDATEAllocation`, payload);
-        let query = supabase
-            .from("db_allocation")
-            .update(payload)
-            .eq("id", payload.id)
-            .select();
-
-        let resUPAllocation = await query;
-        console.log(`resUPAllocation`, resUPAllocation);
-    } catch (error) {
-        showToast(
-            error + `<br><br>Contact WFM and send a screenshot of the error`,
-            "danger"
-        );
-    }
-}
-
-async function dbUPDATECount(payload, operator) {
-    console.log("dbUPDATECount");
-
-    try {
-        if (operator === "add") {
-            payload.approved_count = ++payload.approved_count;
-        } else {
-            payload.approved_count = --payload.approved_count;
-        }
-
-        console.log(`dbUPDATECount`, payload);
-        let query = supabase
-            .from("db_approved_count")
-            .upsert(payload)
-            .eq("id", payload.id)
-            .select();
-        let resUpCount = await query;
-        console.log("resUpCount", resUpCount);
-    } catch (error) {
-        showToast(
-            error + `<br><br>Contact WFM and send a screenshot of the error`,
-            "danger"
-        );
-    }
-}
-
-async function actionReinstate(transaction_id) {
-    console.log("actionReinstate");
-
-    try {
-        let getReinstatePayload = await supabase
-            .from("db_pto_request")
-            .select(`*`)
-            .eq(`transaction_id`, transaction_id);
-        console.log(`getReinstatePayload`, getReinstatePayload.data[0]);
-        dbGETpto(getReinstatePayload.data[0]);
-    } catch (error) {}
 }
 
 function tablestatusUpdate(status, leave_date) {
@@ -645,6 +524,7 @@ function lockDateToReinstate(leave_date) {
 // ACTION ITEM LISTENER
 
 function actionItemListener() {
+    //Adds Event Listener on all action items
     let c = document.querySelectorAll(".tbl-actionitems span");
 
     c.forEach((actionitem) => {
@@ -654,6 +534,7 @@ function actionItemListener() {
             let action = e.target.dataset.action;
 
             if (action === "cancel") {
+                console.log("Click Cancel");
                 actionCancel(transaction_id);
             } else if (action === "reinstate") {
                 actionReinstate(transaction_id);
@@ -666,7 +547,276 @@ function actionItemListener() {
         });
     });
 }
+const PTO_STATUS = {
+    APPROVED: `APPROVED`,
+    DENIED: `DENIED`,
+    CANCELLED: `CANCELLED`,
+    WAITLISTED: `WAITLISTED`,
+};
 
-function actionCancel(transaction_id) {
-    console.log("actionCancel");
+const TIER = {
+    RESOLUTIONS1: `Resolutions 1`,
+    RESOLUTIONS2: `Resolutions 2`,
+    RESOLUTIONS3: `Resolutions 3`,
+    DMHS: `DMHS`,
+    DSS: `Dedicated Superhost`,
+};
+
+const SHIFT_CODE = {
+    AM: `AM`,
+    PM: `PM`,
+    MID: `MID`,
+};
+
+const OPERATOR = {
+    ADD: `add`,
+    REMOVE: `remove`,
+};
+
+async function actionFormSend() {
+    console.log("sendPTOWorkflow");
+    // let userDetails = await userData();
+    let payload = {
+        leave_date: document.querySelector("#inpdate_leavedate").value,
+        status: null,
+        cancelled_on: null,
+        status_remarks: null,
+        pto_reason: document.querySelector("#textarea_ptoreason").value,
+        cancellation_remarks: null,
+        sender: userDetails.email,
+        recipient: userDetails.email,
+        skill: userDetails.skill,
+        site: userDetails.site,
+        shift_code: userDetails.shift_code,
+    };
+
+    dbGETpto(payload);
 }
+
+async function actionReinstate(transaction_id) {
+    console.log("actionReinstate");
+
+    try {
+        let db_pto_request;
+        let queryReinstate = await supabase
+            .from("db_pto_request")
+            .select(`*`)
+            .eq(`transaction_id`, transaction_id);
+
+        db_pto_request = queryReinstate.data[0];
+        db_pto_request.skill = userDetails.skill;
+        db_pto_request.shift_code = userDetails.shift_code;
+        db_pto_request.site = userDetails.site;
+        db_pto_request.cancelled_on = null;
+        db_pto_request.cancellation_remarks = null;
+        db_pto_request.sender = userDetails.email;
+        db_pto_request.created_at = new Date();
+
+        let allocation = await get_db_allocation(db_pto_request, OPERATOR.ADD);
+        let approved_count = await get_db_approval_count(
+            db_pto_request,
+            OPERATOR.ADD
+        );
+
+        if (!(approved_count.approved_count > approvedPtoThreshold)) {
+            if (!(allocation.remaining < 0)) {
+                db_pto_request.status = PTO_STATUS.APPROVED;
+                update_db_allocations(allocation);
+                update_db_approved_count(approved_count);
+                update_db_pto_request(db_pto_request);
+            } else {
+                db_pto_request.status = PTO_STATUS.WAITLISTED;
+                update_db_pto_request(db_pto_request);
+                console.log(
+                    `You have been added to the waitlist and will be notified if an allocation becomes avaiable for ${formatDatemmddyyyy(
+                        new Date(db_pto_request.leave_date)
+                    )}.`
+                );
+            }
+        } else {
+            db_pto_request.status = PTO_STATUS.DENIED;
+            update_db_pto_request(db_pto_request);
+            console.log(
+                `The number of your approved leaves has reached the limit (${approvedPtoThreshold}).<br>\nContact your supervisor for assistance.`
+            );
+        }
+    } catch (error) {
+        console.error("Error: in actionReinstate");
+        console.log(`%c ${error}`, `color:red`);
+    }
+}
+
+async function actionCancel(transaction_id, cancellation_remarks) {
+    cancellation_remarks = "this is a new cancellation";
+    console.log(transaction_id);
+    try {
+        let db_pto_request;
+        let queryCancel = await supabase
+            .from("db_pto_request")
+            .select("*")
+            .eq("transaction_id", transaction_id);
+
+        db_pto_request = queryCancel.data[0];
+
+        let allocation = await get_db_allocation(
+            db_pto_request,
+            OPERATOR.REMOVE
+        );
+        let approved_count = await get_db_approval_count(
+            db_pto_request,
+            OPERATOR.REMOVE
+        );
+
+        let updated_db_pto_request = await structuredClone(db_pto_request);
+        updated_db_pto_request.sender = userDetails.email;
+        updated_db_pto_request.cancellation_remarks = cancellation_remarks
+            ? cancellation_remarks
+            : null;
+        updated_db_pto_request.cancelled_on = new Date();
+        updated_db_pto_request.status = PTO_STATUS.CANCELLED;
+        console.table(db_pto_request);
+        console.table(updated_db_pto_request);
+        if (db_pto_request.status === OPERATOR.WAITLISTED) {
+            update_db_allocations(allocation);
+            update_db_approved_count(approved_count);
+        }
+        update_db_pto_request(updated_db_pto_request);
+
+        tableUpdate();
+    } catch (error) {
+        console.error("Error: in actionCancel");
+        console.log(`%c ${error}`, `color:red`);
+    }
+}
+
+async function update_db_pto_request(payload) {
+    //This updates db_pto request database
+
+    console.log("upsertPTO");
+
+    try {
+        let query = supabase.from("db_pto_request").upsert(payload).select();
+
+        if (payload.transaction_id) {
+            query = query.eq("transaction_id", payload.transaction_id);
+        }
+
+        let resUpsert = await query;
+        tableUpdate();
+        console.log(resUpsert);
+    } catch (error) {
+        showToast(
+            error + `<br><br>Contact WFM and send a screenshot of the error`,
+            "danger"
+        );
+    }
+}
+
+async function update_db_allocations(payload) {
+    //This updates db_allocation
+    try {
+        let { data, error } = await supabase
+            .from(`db_allocation`)
+            .upsert(payload)
+            .eq("id", payload.id)
+            .select(`*`);
+
+        console.log(`update_allocations`, data);
+        return data;
+    } catch (error) {
+        console.error("Error: in update_db_allocation");
+        console.log(`%c ${error}`, `color:red`);
+        showToast(
+            error + `<br><br>Contact WFM and send a screenshot of the error`,
+            "danger"
+        );
+    }
+}
+
+async function update_db_approved_count(payload) {
+    let { data, error } = await supabase
+        .from(`db_approved_count`)
+        .upsert(payload)
+        .eq("id", payload.id)
+        .select(`*`);
+
+    console.log(`update_approved_count`, data);
+    return data;
+}
+
+async function get_db_allocation(payload, operator) {
+    try {
+        let db_allocation;
+        let query = await supabase
+            .from("db_allocation")
+            .select("*")
+            .eq("skill", payload.skill)
+            .eq("shift_code", payload.shift_code)
+            .eq("site", payload.site)
+            .eq("date", payload.leave_date);
+
+        db_allocation = query.data[0];
+
+        console.info(`Init db_allocation`, JSON.stringify(db_allocation));
+        if (operator === OPERATOR.REMOVE) {
+            ++db_allocation.remaining;
+            --db_allocation.approved;
+        } else if (operator === OPERATOR.ADD) {
+            --db_allocation.remaining;
+            ++db_allocation.approved;
+        }
+
+        console.info(`Endo db_allocation`, JSON.stringify(db_allocation));
+        return db_allocation;
+    } catch (error) {
+        console.error("Error: in update_db_allocation");
+        console.log(`%c ${error}`, `color:red`);
+        showToast(
+            error + `<br><br>Contact WFM and send a screenshot of the error`,
+            "danger"
+        );
+    }
+}
+
+async function get_db_approval_count(payload, operator) {
+    let emptyShell = {
+        email: payload.recipient,
+        year: new Date(payload.leave_date).getFullYear(),
+        approved_count: 0,
+    };
+    try {
+        let db_approved_count;
+        let query = await supabase
+            .from("db_approved_count")
+            .select("*")
+            .eq("email", payload.recipient)
+            .eq("year", new Date(payload.leave_date).getFullYear());
+
+        db_approved_count = query.data[0] ? query.data[0] : emptyShell;
+        console.info(
+            `Init db_approved_count`,
+            JSON.stringify(db_approved_count)
+        );
+        if (operator === OPERATOR.REMOVE) {
+            --db_approved_count.approved_count;
+        } else if (operator === OPERATOR.ADD) {
+            ++db_approved_count.approved_count;
+        }
+        console.info(
+            `Endo db_approved_count`,
+            JSON.stringify(db_approved_count)
+        );
+        return db_approved_count;
+    } catch (error) {
+        console.error("Error: in db_approved_count");
+        console.log(`%c ${error}`, `color:red`);
+        showToast(
+            error + `<br><br>Contact WFM and send a screenshot of the error`,
+            "danger"
+        );
+    }
+}
+
+//Init
+tableUpdate();
+updateUserDetails();

@@ -7,6 +7,32 @@ const supabase = createClient(
     "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpocXhpb3FudmlheGRqbGF1eWlyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDg4ODQ2MjksImV4cCI6MjA2NDQ2MDYyOX0.DAP7sLjxZCtbS-0G4c4brSda6wL2u9mC3QLBfKBXOUM"
 );
 
+const PTO_STATUS = {
+    APPROVED: `APPROVED`,
+    DENIED: `DENIED`,
+    CANCELLED: `CANCELLED`,
+    WAITLISTED: `WAITLISTED`,
+};
+
+const TIER = {
+    RESOLUTIONS1: `Resolutions 1`,
+    RESOLUTIONS2: `Resolutions 2`,
+    RESOLUTIONS3: `Resolutions 3`,
+    DMHS: `DMHS`,
+    DSS: `Dedicated Superhost`,
+};
+
+const SHIFT_CODE = {
+    AM: `AM`,
+    PM: `PM`,
+    MID: `MID`,
+};
+
+const OPERATOR = {
+    ADD: `add`,
+    REMOVE: `remove`,
+};
+
 const dialogbox = document.querySelector("#popup-modal");
 const dialogboxCloseBtn = document.querySelector("#modal-close");
 const btnSendRequest = document.querySelector("#btnSendRequest");
@@ -403,6 +429,7 @@ async function dbGETCount(payload, allocData) {
             error + `<br><br>Contact WFM and send a screenshot of the error`,
             "danger"
         );
+        console.error(error);
     }
 }
 
@@ -547,55 +574,99 @@ function actionItemListener() {
         });
     });
 }
-const PTO_STATUS = {
-    APPROVED: `APPROVED`,
-    DENIED: `DENIED`,
-    CANCELLED: `CANCELLED`,
-    WAITLISTED: `WAITLISTED`,
-};
-
-const TIER = {
-    RESOLUTIONS1: `Resolutions 1`,
-    RESOLUTIONS2: `Resolutions 2`,
-    RESOLUTIONS3: `Resolutions 3`,
-    DMHS: `DMHS`,
-    DSS: `Dedicated Superhost`,
-};
-
-const SHIFT_CODE = {
-    AM: `AM`,
-    PM: `PM`,
-    MID: `MID`,
-};
-
-const OPERATOR = {
-    ADD: `add`,
-    REMOVE: `remove`,
-};
 
 async function actionFormSend() {
-    console.log("sendPTOWorkflow");
-    // let userDetails = await userData();
-    let payload = {
-        leave_date: document.querySelector("#inpdate_leavedate").value,
-        status: null,
-        cancelled_on: null,
-        status_remarks: null,
-        pto_reason: document.querySelector("#textarea_ptoreason").value,
-        cancellation_remarks: null,
-        sender: userDetails.email,
-        recipient: userDetails.email,
-        skill: userDetails.skill,
-        site: userDetails.site,
-        shift_code: userDetails.shift_code,
-    };
+    console.group("actionFormSend");
 
-    dbGETpto(payload);
+    try {
+        // let userDetails = await userData();
+        let payload = {
+            cancellation_remarks: null,
+            cancelled_on: null,
+            created_at: null,
+            leave_date: document.querySelector("#inpdate_leavedate").value,
+            pto_reason: document.querySelector("#textarea_ptoreason").value,
+            recipient: userDetails.email,
+            sender: userDetails.email,
+            shift_code: userDetails.shift_code,
+            site: userDetails.site,
+            skill: userDetails.skill,
+            status: null,
+            status_remarks: null,
+            transaction_id: null,
+        };
+
+        console.log("initial payload", payload);
+
+        let db_pto_request;
+        let queryFormSend = await supabase
+            .from("db_pto_request")
+            .select("*")
+            .eq("recipient", payload.recipient)
+            .eq("leave_date", payload.leave_date);
+        console.log(`ln 607`, queryFormSend);
+
+        if (queryFormSend.data[0] ? true : false) {
+            console.log(queryFormSend.data[0]);
+            if (queryFormSend.data[0].status === PTO_STATUS.CANCELLED ||queryFormSend.data[0].status === PTO_STATUS.DENIED) {
+                actionReinstate(
+                    queryFormSend.data[0].transaction_id,
+                    payload.pto_reason
+                );
+            }else{
+                
+                console.log(`Not ${PTO_STATUS.CANCELLED}&${PTO_STATUS.DENIED}`,queryFormSend.data[0]);
+            }    
+        } else {
+            db_pto_request = payload;
+            delete payload.transaction_id;
+            delete payload.created_at;
+
+            let allocation = await get_db_allocation(
+                db_pto_request,
+                OPERATOR.ADD
+            );
+            let approved_count = await get_db_approval_count(
+                db_pto_request,
+                OPERATOR.ADD
+            );
+
+            if (!(approved_count.approved_count > approvedPtoThreshold)) {
+                if (!(allocation.remaining < 0)) {
+                    db_pto_request.status = PTO_STATUS.APPROVED;
+                    update_db_allocations(allocation);
+                    update_db_approved_count(approved_count);
+                    update_db_pto_request(db_pto_request);
+                } else {
+                    db_pto_request.status = PTO_STATUS.WAITLISTED;
+                    update_db_pto_request(db_pto_request);
+                    console.log(
+                        `You have been added to the waitlist and will be notified if an allocation becomes avaiable for ${formatDatemmddyyyy(
+                            new Date(db_pto_request.leave_date)
+                        )}.`
+                    );
+                }
+            } else {
+                db_pto_request.status = PTO_STATUS.DENIED;
+                update_db_pto_request(db_pto_request);
+                console.log(
+                    `The number of your approved leaves has reached the limit (${approvedPtoThreshold}).<br>\nContact your supervisor for assistance.`
+                );
+            }
+
+            console.log(`ln 615`, db_pto_request);
+        }
+    } catch (error) {
+        console.error(error);
+    }
+
+    console.groupEnd();
 }
 
 async function actionReinstate(transaction_id, pto_reason) {
     console.log("actionReinstate");
     pto_reason = pto_reason ? pto_reason : ``;
+    console.log(pto_reason);
     try {
         let db_pto_request;
         let queryReinstate = await supabase
@@ -604,6 +675,7 @@ async function actionReinstate(transaction_id, pto_reason) {
             .eq(`transaction_id`, transaction_id);
 
         db_pto_request = queryReinstate.data[0];
+        db_pto_request.pto_reason += `-${db_pto_request.created_at}\n ${pto_reason}-`;
         db_pto_request.skill = userDetails.skill;
         db_pto_request.shift_code = userDetails.shift_code;
         db_pto_request.site = userDetails.site;
@@ -611,7 +683,6 @@ async function actionReinstate(transaction_id, pto_reason) {
         db_pto_request.cancellation_remarks = null;
         db_pto_request.sender = userDetails.email;
         db_pto_request.created_at = new Date();
-        db_pto_request.pto_reason += pto_reason;
 
         let allocation = await get_db_allocation(db_pto_request, OPERATOR.ADD);
         let approved_count = await get_db_approval_count(
@@ -764,6 +835,7 @@ async function get_db_approval_count(payload, operator) {
 }
 
 async function update_db_pto_request(payload) {
+    console.groupCollapsed("FN update_db_pto_request");
     //This updates db_pto request database
 
     console.log("upsertPTO");
@@ -784,6 +856,7 @@ async function update_db_pto_request(payload) {
             "danger"
         );
     }
+    console.groupEnd();
 }
 
 async function update_db_allocations(payload) {
@@ -821,3 +894,4 @@ async function update_db_approved_count(payload) {
 //Init
 tableUpdate();
 updateUserDetails();
+// actionFormSend();

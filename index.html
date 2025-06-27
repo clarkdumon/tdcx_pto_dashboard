@@ -4,11 +4,10 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Document</title>
+  <title>WFM PTO DASHBOARD</title>
 </head>
-<style>
 
-</style>
+<link rel="icon" type="image/x-icon" href="https://cdn-icons-png.flaticon.com/512/6429/6429114.png">
 <link rel="stylesheet"
   href="https://fonts.googleapis.com/css2?family=Inter:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&amp;display=swap"
   data-tag="font">
@@ -26,14 +25,14 @@
         <h2>Workforce Management</h2>
       </div>
       <div class="sidebar-2">
-        <ul>
-          <li class="sidebarmenu sidebarmenu-active">Dashboard</li>
-          <!-- <li class="sidebarmenu">Allocation</li>
-          <li class="sidebarmenu">Request</li> -->
+        <ul id="sidebar-menu">
+          <li class="sidebarmenu active">Dashboard</li>
+          <li class="sidebarmenu">Allocation</li>
+          <li class="sidebarmenu" hidden>Request</li>
         </ul>
       </div>
       <div class="sidebar-3">
-        <span id="currentuser-name" data-email="clark.dumon@tdcx.com"></span>
+        <span id="currentuser-name" data-email="jinky.barquilla@tdcx.com"></span>
         <span id="currentuser-skill-shiftcode-site"></span>
         <span id="currentuser-role"></span>
       </div>
@@ -41,7 +40,7 @@
         <span>? Help Center</span>
       </div>
     </div>
-    <div class="contentarea">
+    <div id="contentarea-dashboard" class="contentarea">
       <div class="uppercontent">
         <div class="uppercontent-left">
           <h1>Dashboard</h1>
@@ -87,23 +86,64 @@
         </div>
       </div>
     </div>
-  </div>
-  <dialog id="popup-modal">
-    <span class="material-symbols-rounded" id="modal-close">close</span>
-    <div id="modal-send-request">
-      <label for="inpdate_leavedate">Leave Date</label>
-      <input type="date" name="inpdate_leavedate" id="inpdate_leavedate">
-      <label for="textarea_ptoreason">PTO Reason</label>
-      <textarea name="textarea_ptoreason" id="textarea_ptoreason" placeholder="Reason of request" maxlength="300"></textarea>
-      <button type="button" id="btn_send_request" class="btn-info-norm btn-medium">Submit Request</button>
+    <div id="contentarea-allocation" class="contentarea hidden">
+      <div class="uppercontent">
+        <div class="uppercontent-left">
+          <h1>Allocation</h1>
+        </div>
+        <div class="uppercontent-right">
+        </div>
+      </div>
+      <div class="lowercontent">
+        <div class="headercontent">
+          <h2 id="allocation--title">Resolutions 1 - AM - Cebu Allocations</h2>
+        </div>
+        <div class="table-content box-table">
+          <table id='allocation_data'>
+            <thead>
+              <tr>
+                <th>Date</th>
+                <th>Allocation</th>
+                <th>Approved</th>
+                <th>Remaining</th>
+              </tr>
+            </thead>
+            <tbody id="allocationtablebody">
+              <td class="tbl-transactionID"><span class="loader"></span></td>
+            </tbody>
+          </table>
+        </div>
+
+      </div>
     </div>
-  <dialog id="pto-details"></dialog>
-  <div id="toastBoxInner"></div>
-  </dialog>
-  <!-- Toast Notification HTML -->
-  <div id="toastBox"></div>
-  <!-- Toast Notification End -->
-  <script src="script.js" type="module"></script>
+    <dialog id="popup-modal">
+      <span class="material-symbols-rounded" id="modal-close">close</span>
+      <div id="modal-send-request">
+        <div class="ptoForm" id="recipientData">
+          <label for="recipient">Recipient</label>
+          <input type="text" name="recipient">
+          <div id="recipientList"></div>
+        </div>
+        <div class="ptoForm" id="leaveDetails">
+          <label for="inpdate_leavedate">Leave Date</label>
+          <input type="date" name="inpdate_leavedate" id="inpdate_leavedate">
+          <label for="textarea_ptoreason">PTO Reason</label>
+          <textarea name="textarea_ptoreason" id="textarea_ptoreason" placeholder="Reason of request"
+            maxlength="300"></textarea>
+          <button type="button" id="btn_send_request" class="btn-info-norm btn-medium">Submit Request</button>
+        </div>
+      </div>
+      <div id="toastBoxInner"></div>
+    </dialog>
+
+    <dialog id="popNotification">
+    </dialog>
+
+    <!-- Toast Notification HTML -->
+    <div id="toastBox"></div>
+    <!-- Toast Notification End -->
+
+    <script defer src="script.js" type="module"></script>
 </body>
 
 </html>

@@ -11,15 +11,23 @@ const CONFIG = {
     PTO_OPEN_START_DATE: () => {
         // Calculate the start date for PTO requests
         let openStartDate = new Date();
-        openStartDate.setDate(openStartDate.getDate() + (CONFIG.PTO_DAYS_START_OFFSET - openStartDate.getDay()));
+        openStartDate.setDate(
+            openStartDate.getDate() +
+                (CONFIG.PTO_DAYS_START_OFFSET - openStartDate.getDay())
+        );
         return formateDateyyyymmdd(openStartDate);
     },
 
     PTO_OPEN_END_DATE: () => {
         // Calculate the end date for PTO requests
         let openEndDate = new Date();
-        openEndDate.setDate(openEndDate.getDate() + (CONFIG.PTO_DAYS_START_OFFSET - openEndDate.getDay()));
-        openEndDate.setDate(openEndDate.getDate() + CONFIG.PTO_DAYS_END_DATE_OFFSET);
+        openEndDate.setDate(
+            openEndDate.getDate() +
+                (CONFIG.PTO_DAYS_START_OFFSET - openEndDate.getDay())
+        );
+        openEndDate.setDate(
+            openEndDate.getDate() + CONFIG.PTO_DAYS_END_DATE_OFFSET
+        );
         return formateDateyyyymmdd(openEndDate);
     },
 };
@@ -90,7 +98,10 @@ const btnSendRequest = document.querySelector("#btnSendRequest");
 
 let userData = async (email) => {
     try {
-        let reponse = await supabase.from("member_list").select("*").eq("email", email);
+        let reponse = await supabase
+            .from("member_list")
+            .select("*")
+            .eq("email", email);
 
         if (!reponse.error) {
             return reponse.data[0];
@@ -109,7 +120,9 @@ function showToast(message, status) {
     toast.className = `toast ${status}`;
     toast.innerHTML = `<span class="material-symbols-rounded">${icons[status]}</span> ${message}`;
 
-    const toastBox = document.querySelector("#popup-modal").open ? document.querySelector("#toastBoxInner") : document.querySelector("#toastBox");
+    const toastBox = document.querySelector("#popup-modal").open
+        ? document.querySelector("#toastBoxInner")
+        : document.querySelector("#toastBox");
 
     toastBox.appendChild(toast);
     setTimeout(() => toast.remove(), CONFIG.TOAST_DURATION);
@@ -165,7 +178,11 @@ dialogboxCloseBtn.addEventListener("click", (event) => {
 
 function offsideModalClick(modal) {
     const rect = modal.getBoundingClientRect();
-    const isInDialog = event.clientX >= rect.left && event.clientX <= rect.right && event.clientY >= rect.top && event.clientY <= rect.bottom;
+    const isInDialog =
+        event.clientX >= rect.left &&
+        event.clientX <= rect.right &&
+        event.clientY >= rect.top &&
+        event.clientY <= rect.bottom;
 
     if (!isInDialog) {
         modal.close();
@@ -174,7 +191,12 @@ function offsideModalClick(modal) {
 
 async function pullPTOlist() {
     try {
-        let { data, error } = await supabase.from("db_pto_request").select("*").eq("recipient", user).order("leave_date", { ascending: false });
+        let { data, error } = await supabase
+            .from("db_pto_request")
+            .select("*")
+            // .eq("recipient", user)
+            .or(`recipient.eq.${user},sender.eq.${user}`)
+            .order("leave_date", { ascending: false });
         return data;
     } catch (error) {}
 }
@@ -188,16 +210,22 @@ async function tableUpdate() {
     for (let i = 0; i < dbData.length; i++) {
         let status = tablestatusUpdate(dbData[i].status, dbData[i].leave_date);
         table += `<tr>
-                    <td class="tbl-transactionID" title='${dbData[i].transaction_id}'>${dbData[i].transaction_id.substr(0, 10)}...</td>
-                <td class="tbl-timestamp">${formatDatemmddyyyyhhmmampm(new Date(dbData[i].created_at))}</td>
+                    <td class="tbl-transactionID" title='${
+                        dbData[i].transaction_id
+                    }'>${dbData[i].transaction_id.substr(0, 10)}...</td>
+                <td class="tbl-timestamp">${formatDatemmddyyyyhhmmampm(
+                    new Date(dbData[i].created_at)
+                )}</td>
                 <td class="tbl-sender">${dbData[i].sender}</td>
                 <td class="tbl-recipient">${dbData[i].recipient}</td>
-                <td class="tbl-leave_date">${formatDatemmddyyyy(new Date(dbData[i].leave_date))}</td>
+                <td class="tbl-leave_date">${formatDatemmddyyyy(
+                    new Date(dbData[i].leave_date)
+                )}</td>
                 <td class="status-data">${status.status}
                 </td>
-                <td class="tbl-actionitems" data-transaction_id="${dbData[i].transaction_id}" data-leave_date="${dbData[i].leave_date}">${
-            status.action
-        }
+                <td class="tbl-actionitems" data-transaction_id="${
+                    dbData[i].transaction_id
+                }" data-leave_date="${dbData[i].leave_date}">${status.action}
                 </td></tr>`;
     }
     tableData.innerHTML = table;
@@ -221,8 +249,10 @@ function formChecker() {
         return true;
     } else {
         if (
-            document.querySelector("#inpdate_leavedate").value < CONFIG.PTO_OPEN_START_DATE() ||
-            document.querySelector("#inpdate_leavedate").value > CONFIG.PTO_OPEN_END_DATE()
+            document.querySelector("#inpdate_leavedate").value <
+                CONFIG.PTO_OPEN_START_DATE() ||
+            document.querySelector("#inpdate_leavedate").value >
+                CONFIG.PTO_OPEN_END_DATE()
         ) {
             alert("Please enter dates that is currently open");
             document.querySelector("#inpdate_leavedate").value = null;
@@ -246,10 +276,15 @@ async function updateUserDetails() {
         });
     } catch (error) {
         btnSendRequest.disabled = true;
-        showToast("You are not an identified user, Please contact Workforce Mangement", "danger");
+        showToast(
+            "You are not an identified user, Please contact Workforce Mangement",
+            "danger"
+        );
     }
     document.querySelector("#currentuser-name").innerHTML = `${user.name}`;
-    document.querySelector("#currentuser-skill-shiftcode-site").innerHTML = `${user.skill} - ${user.shift_code} - ${user.site}`;
+    document.querySelector(
+        "#currentuser-skill-shiftcode-site"
+    ).innerHTML = `${user.skill} - ${user.shift_code} - ${user.site}`;
     document.querySelector("#currentuser-role").innerHTML = `${user.role}`;
 }
 
@@ -273,9 +308,17 @@ function tablestatusUpdate(status, leave_date) {
         status: `<span class="status ${className}"><span class="material-symbols-rounded status-icon">${icon}</span><span>${label}</span></span>`,
         action: showAction
             ? `<span class="material-symbols-rounded action-icon ${
-                  status === "CANCELLED" || status === "DENIED" ? "reinstate" : "cancel"
-              }" data-action="${status === "CANCELLED" || status === "DENIED" ? "reinstate" : "cancel"}">${
-                  status === "CANCELLED" || status === "DENIED" ? "settings_backup_restore" : "delete_forever"
+                  status === "CANCELLED" || status === "DENIED"
+                      ? "reinstate"
+                      : "cancel"
+              }" data-action="${
+                  status === "CANCELLED" || status === "DENIED"
+                      ? "reinstate"
+                      : "cancel"
+              }">${
+                  status === "CANCELLED" || status === "DENIED"
+                      ? "settings_backup_restore"
+                      : "delete_forever"
               }</span>`
             : "",
     };
@@ -293,7 +336,9 @@ function lockDateforCancellation(leave_date) {
     const today = new Date();
     const dayOfWeek = today.getDay();
     const lockDate = new Date(formateDateyyyymmdd(today));
-    lockDate.setDate(today.getDate() + (CONFIG.NUMBER_OF_DAYS_AVAILABLE_FOR_CANCEL - 1));
+    lockDate.setDate(
+        today.getDate() + (CONFIG.NUMBER_OF_DAYS_AVAILABLE_FOR_CANCEL - 1)
+    );
 
     const inputDate = new Date(leave_date);
     const validator = inputDate - lockDate;
@@ -328,7 +373,10 @@ function actionItemListener() {
             } else if (action === "reinstate") {
                 actionReinstate(transaction_id);
             } else {
-                showToast(`Action not recognized.``<br><br>Contact WFM and send a screenshot of the error`, "danger");
+                showToast(
+                    `Action not recognized.``<br><br>Contact WFM and send a screenshot of the error`,
+                    "danger"
+                );
             }
         });
     });
@@ -366,13 +414,20 @@ async function cancelPrompt(transaction_id, leave_date, actionItem) {
 
     yes.addEventListener("click", () => {
         yes.disabled = true;
-        if (document.querySelector("#prompt_cancellation_remarks").value === "") {
+        if (
+            document.querySelector("#prompt_cancellation_remarks").value === ""
+        ) {
             popNotification.close();
-            TOAST_CALLS.DANGER(`Action Cancelled: Please provide a reason for cancellation.`);
+            TOAST_CALLS.DANGER(
+                `Action Cancelled: Please provide a reason for cancellation.`
+            );
             actionItem.style.display = "inline-block";
             return;
         } else {
-            actionCancel(transaction_id, document.querySelector("#prompt_cancellation_remarks").value);
+            actionCancel(
+                transaction_id,
+                document.querySelector("#prompt_cancellation_remarks").value
+            );
             popNotification.close();
         }
         console.log(`%c Yes clicked`, `color:green`);
@@ -395,7 +450,9 @@ async function cancelPrompt(transaction_id, leave_date, actionItem) {
 
 async function actionFormSend() {
     console.group("actionFormSend");
-
+    let ptoFormRecipientData = await document.querySelector(
+        "div#recipientData input"
+    );
     try {
         // let userDetails = await userData();
         let payload = {
@@ -404,22 +461,32 @@ async function actionFormSend() {
             created_at: null,
             leave_date: document.querySelector("#inpdate_leavedate").value,
             pto_reason: document.querySelector("#textarea_ptoreason").value,
-            recipient: userDetails.email,
+            recipient: ptoFormRecipientData.dataset.email,
             sender: userDetails.email,
-            shift_code: userDetails.shift_code,
-            site: userDetails.site,
-            skill: userDetails.skill,
+            shift_code: ptoFormRecipientData.dataset.shift_code,
+            site: ptoFormRecipientData.dataset.site,
+            skill: ptoFormRecipientData.dataset.skill,
             status: null,
             status_remarks: null,
             transaction_id: null,
         };
 
         let db_pto_request;
-        let queryFormSend = await supabase.from("db_pto_request").select("*").eq("recipient", payload.recipient).eq("leave_date", payload.leave_date);
+        let queryFormSend = await supabase
+            .from("db_pto_request")
+            .select("*")
+            .eq("recipient", payload.recipient)
+            .eq("leave_date", payload.leave_date);
 
         if (queryFormSend.data[0] ? true : false) {
-            if (queryFormSend.data[0].status === PTO_STATUS.CANCELLED || queryFormSend.data[0].status === PTO_STATUS.DENIED) {
-                actionReinstate(queryFormSend.data[0].transaction_id, payload.pto_reason);
+            if (
+                queryFormSend.data[0].status === PTO_STATUS.CANCELLED ||
+                queryFormSend.data[0].status === PTO_STATUS.DENIED
+            ) {
+                actionReinstate(
+                    queryFormSend.data[0].transaction_id,
+                    payload.pto_reason
+                );
             } else {
                 TOAST_CALLS.DANGER(
                     `You’ve already submitted a PTO request for ${formatDatemmddyyyy(
@@ -435,10 +502,18 @@ async function actionFormSend() {
             delete payload.transaction_id;
             delete payload.created_at;
 
-            let allocation = await get_db_allocation(db_pto_request, OPERATOR.ADD);
-            let approved_count = await get_db_approval_count(db_pto_request, OPERATOR.ADD);
+            let allocation = await get_db_allocation(
+                db_pto_request,
+                OPERATOR.ADD
+            );
+            let approved_count = await get_db_approval_count(
+                db_pto_request,
+                OPERATOR.ADD
+            );
 
-            if (!(approved_count.approved_count > CONFIG.APPROVED_PTO_THRESHOLD)) {
+            if (
+                !(approved_count.approved_count > CONFIG.APPROVED_PTO_THRESHOLD)
+            ) {
                 if (!(allocation.remaining < 0)) {
                     db_pto_request.status = PTO_STATUS.APPROVED;
                     update_db_allocations(allocation);
@@ -482,7 +557,10 @@ async function actionReinstate(transaction_id, pto_reason) {
     pto_reason = pto_reason ? pto_reason : ``;
     try {
         let db_pto_request;
-        let queryReinstate = await supabase.from("db_pto_request").select(`*`).eq(`transaction_id`, transaction_id);
+        let queryReinstate = await supabase
+            .from("db_pto_request")
+            .select(`*`)
+            .eq(`transaction_id`, transaction_id);
 
         db_pto_request = queryReinstate.data[0];
         db_pto_request.pto_reason += `-${db_pto_request.created_at}\n ${pto_reason}-`;
@@ -495,7 +573,10 @@ async function actionReinstate(transaction_id, pto_reason) {
         db_pto_request.created_at = new Date();
 
         let allocation = await get_db_allocation(db_pto_request, OPERATOR.ADD);
-        let approved_count = await get_db_approval_count(db_pto_request, OPERATOR.ADD);
+        let approved_count = await get_db_approval_count(
+            db_pto_request,
+            OPERATOR.ADD
+        );
 
         if (!(approved_count.approved_count > CONFIG.APPROVED_PTO_THRESHOLD)) {
             if (!(allocation.remaining < 0)) {
@@ -504,7 +585,9 @@ async function actionReinstate(transaction_id, pto_reason) {
                 update_db_approved_count(approved_count, OPERATOR.ADD);
                 update_db_pto_request(db_pto_request);
                 showToast(
-                    `Your request for ${formatDatemmddyyyy(new Date(db_pto_request.leave_date))} has been approved. Enjoy your break!.`,
+                    `Your request for ${formatDatemmddyyyy(
+                        new Date(db_pto_request.leave_date)
+                    )} has been approved. Enjoy your break!.`,
                     TOAST.SUCCESS
                 );
             } else {
@@ -537,16 +620,27 @@ async function actionCancel(transaction_id, cancellation_remarks) {
     console.groupCollapsed(`FN action Cancel`);
     try {
         let db_pto_request;
-        let queryCancel = await supabase.from("db_pto_request").select("*").eq("transaction_id", transaction_id);
+        let queryCancel = await supabase
+            .from("db_pto_request")
+            .select("*")
+            .eq("transaction_id", transaction_id);
 
         db_pto_request = queryCancel.data[0];
 
-        let allocation = await get_db_allocation(db_pto_request, OPERATOR.REMOVE);
-        let approved_count = await get_db_approval_count(db_pto_request, OPERATOR.REMOVE);
+        let allocation = await get_db_allocation(
+            db_pto_request,
+            OPERATOR.REMOVE
+        );
+        let approved_count = await get_db_approval_count(
+            db_pto_request,
+            OPERATOR.REMOVE
+        );
 
         let updated_db_pto_request = await structuredClone(db_pto_request);
         updated_db_pto_request.sender = userDetails.email;
-        updated_db_pto_request.cancellation_remarks = cancellation_remarks ? cancellation_remarks : null;
+        updated_db_pto_request.cancellation_remarks = cancellation_remarks
+            ? cancellation_remarks
+            : null;
         updated_db_pto_request.cancelled_on = new Date();
         updated_db_pto_request.status = PTO_STATUS.CANCELLED;
         console.log(db_pto_request.status);
@@ -596,7 +690,10 @@ async function get_db_allocation(payload, operator) {
     } catch (error) {
         console.error("Error: in update_db_allocation");
         console.error(`%c ${error}`, `color:red`);
-        showToast(error + `<br><br>Contact WFM and send a screenshot of the error`, "danger");
+        showToast(
+            error + `<br><br>Contact WFM and send a screenshot of the error`,
+            "danger"
+        );
     }
 }
 
@@ -623,7 +720,10 @@ async function get_db_approval_count(payload, operator) {
         return db_approved_count;
     } catch (error) {
         console.log(`%c ${JSON.stringify(error)}`, `color:red`);
-        showToast(error + `<br><br>Contact WFM and send a screenshot of the error`, "danger");
+        showToast(
+            error + `<br><br>Contact WFM and send a screenshot of the error`,
+            "danger"
+        );
     }
 }
 
@@ -641,26 +741,40 @@ async function update_db_pto_request(payload) {
         tableUpdate();
     } catch (error) {
         console.error(`%c ${JSON.stringify(error)}`, `color:red`);
-        showToast(error + `<br><br>Contact WFM and send a screenshot of the error`, "danger");
+        showToast(
+            error + `<br><br>Contact WFM and send a screenshot of the error`,
+            "danger"
+        );
     }
 }
 
 async function update_db_allocations(payload) {
     //This updates db_allocation
     try {
-        let { data, error } = await supabase.from(`db_allocation`).upsert(payload).eq("id", payload.id).select(`*`);
+        let { data, error } = await supabase
+            .from(`db_allocation`)
+            .upsert(payload)
+            .eq("id", payload.id)
+            .select(`*`);
 
         return data;
     } catch (error) {
         console.error(`%c ${JSON.stringify(error)}`, `color:red`);
-        showToast(error + `<br><br>Contact WFM and send a screenshot of the error`, "danger");
+        showToast(
+            error + `<br><br>Contact WFM and send a screenshot of the error`,
+            "danger"
+        );
     }
 }
 
 async function update_db_approved_count(payload) {
     console.groupCollapsed(`update_db_approved_count`);
     try {
-        let { data, error } = await supabase.from(`db_approved_count`).upsert(payload).eq("id", payload.id).select(`*`);
+        let { data, error } = await supabase
+            .from(`db_approved_count`)
+            .upsert(payload)
+            .eq("id", payload.id)
+            .select(`*`);
 
         return data;
     } catch (error) {
@@ -671,41 +785,25 @@ async function update_db_approved_count(payload) {
 
 btnSendRequest.addEventListener("click", () => {
     dialogbox.showModal();
-    document.querySelector("#inpdate_leavedate").min = CONFIG.PTO_OPEN_START_DATE();
-    document.querySelector("#inpdate_leavedate").max = CONFIG.PTO_OPEN_END_DATE();
+    document.querySelector("#inpdate_leavedate").min =
+        CONFIG.PTO_OPEN_START_DATE();
+    document.querySelector("#inpdate_leavedate").max =
+        CONFIG.PTO_OPEN_END_DATE();
     document.querySelector("#inpdate_leavedate").value = "";
     document.querySelector("#textarea_ptoreason").value = "";
 
     btnModalSendRequest.disabled = false;
 
-    if (document.getElementById("currentuser-name").dataset.role !== "Support Ambassador") {
+    if (
+        document.getElementById("currentuser-name").dataset.role !==
+        "Support Ambassador"
+    ) {
         document.querySelector("div#recipientData input").focus();
     } else {
         document.querySelector("#inpdate_leavedate").focus();
     }
 });
 
-// dialogbox.showModal();
-
-// popNotification.showModal();
-//Init
-
-// document.addEventListener("DOMContentLoaded", () => {
-//     tableUpdate();
-//     updateUserDetails();
-//     console.log("DOM fully loaded and parsed");
-// });
-
-// let x = document.querySelector("#sidebar-menu");
-// let m = x.children;
-
-// for (let i = 0; i < m.length; i++) {
-//     m[i].addEventListener("click", () => {
-//         console.log(m[i].id);
-//     });
-// }
-
-//
 initializeApp();
 async function initializeApp() {
     await updateUserDetails();
@@ -724,7 +822,10 @@ async function getDataForAllocationsPage() {
         .gte("date", CONFIG.PTO_OPEN_START_DATE())
         .lte("date", CONFIG.PTO_OPEN_END_DATE())
         .eq("skill", document.getElementById("currentuser-name").dataset.skill)
-        .eq("shift_code", document.getElementById("currentuser-name").dataset.shift_code)
+        .eq(
+            "shift_code",
+            document.getElementById("currentuser-name").dataset.shift_code
+        )
         .eq("site", document.getElementById("currentuser-name").dataset.site)
         .order("date", { ascending: true });
 
@@ -758,7 +859,10 @@ async function clickedLink(event) {
 
     document.querySelectorAll(".contentarea").forEach((content) => {
         content.classList.remove("hidden");
-        if (content.id != `contentarea-${String(event.target.innerHTML).toLocaleLowerCase()}`) {
+        if (
+            content.id !=
+            `contentarea-${String(event.target.innerHTML).toLocaleLowerCase()}`
+        ) {
             content.classList.add("hidden");
         }
     });
@@ -774,7 +878,9 @@ async function tableUpdater(sidebar) {
     if (sidebar === "Dashboard") {
         await tableUpdate();
     } else {
-        document.querySelector("#allocation--title").innerHTML = `${document.getElementById("currentuser-name").dataset.skill} - ${
+        document.querySelector("#allocation--title").innerHTML = `${
+            document.getElementById("currentuser-name").dataset.skill
+        } - ${
             document.getElementById("currentuser-name").dataset.shift_code
         } - ${document.getElementById("currentuser-name").dataset.site}`;
         await updateAllocationsTable();
@@ -784,16 +890,21 @@ async function tableUpdater(sidebar) {
 function roleCheck() {
     //Tag UserData
     let userData = document.getElementById("currentuser-name").dataset;
-    let ptoFormRecipientData = document.querySelector("div#recipientData input");
+    let ptoFormRecipientData = document.querySelector(
+        "div#recipientData input"
+    );
     let ptoFormLeaveDetails = document.querySelector("#leaveDetails");
     let recipientList = document.getElementById("recipientList");
     //IF r = Support Ambassador => Disable #recipientData and put user details in the input box
     if (userData.role === `Support Ambassador`) {
         ptoFormLeaveDetails.style.display = null;
-        recipientList.style.display ='none'
+        recipientList.style.display = "none";
         ptoFormRecipientData.disabled = true;
         ptoFormRecipientData.value = userData.name;
         ptoFormRecipientData.dataset.email = userData.email;
+        ptoFormRecipientData.dataset.shift_code = userData.shift_code;
+        ptoFormRecipientData.dataset.site = userData.site;
+        ptoFormRecipientData.dataset.skill = userData.skill;
         document.querySelector("#inpdate_leavedate").value = null;
         document.querySelector("#textarea_ptoreason").value = null;
     } else {
@@ -814,7 +925,9 @@ async function getAgentList() {
             .from("member_list")
             .select("*")
             .eq("role", "Support Ambassador")
-            .or(`team_lead.eq."${userData.name}",operations_manager.eq."${userData.name}"`);
+            .or(
+                `team_lead.eq."${userData.name}",operations_manager.eq."${userData.name}"`
+            );
 
         recipientList.dataset.agentList = JSON.stringify(agentList.data);
         console.log(agentList);
@@ -830,7 +943,9 @@ function generateRecipientList(event) {
 function updateRecipientList(searchValue) {
     let recipientList = document.getElementById("recipientList");
     recipientList.innerHTML = "";
-    let dataSet = recipientList.dataset.agentList ? JSON.parse(recipientList.dataset.agentList) : [];
+    let dataSet = recipientList.dataset.agentList
+        ? JSON.parse(recipientList.dataset.agentList)
+        : [];
 
     let list = dataSet.filter((agent) => {
         let name = String(agent.name).toLocaleLowerCase();
@@ -843,6 +958,9 @@ function updateRecipientList(searchValue) {
         li.addEventListener("click", agentSelect);
         li.dataset.name = agent.name;
         li.dataset.email = agent.email;
+        li.dataset.shift_code = agent.shift_code;
+        li.dataset.site = agent.site;
+        li.dataset.skill = agent.skill;
         li.innerHTML = agent.name;
 
         recipientList.appendChild(li);
@@ -851,18 +969,26 @@ function updateRecipientList(searchValue) {
 
 function agentSelect(event) {
     let recipientList = document.getElementById("recipientList");
-    let ptoFormRecipientData = document.querySelector("div#recipientData input");
+    let ptoFormRecipientData = document.querySelector(
+        "div#recipientData input"
+    );
     let ptoFormLeaveDetails = document.querySelector("#leaveDetails");
 
     recipientList.style.display = "none";
     recipientList.innerHTML = "";
     ptoFormRecipientData.value = event.target.dataset.name;
     ptoFormRecipientData.dataset.email = event.target.dataset.email;
+    ptoFormRecipientData.dataset.shift_code = event.target.dataset.shift_code;
+    ptoFormRecipientData.dataset.site = event.target.dataset.site;
+    ptoFormRecipientData.dataset.skill = event.target.dataset.skill;
+
     ptoFormLeaveDetails.style.display = null;
 }
 
 function focusRecipient(event) {
-    let ptoFormRecipientData = document.querySelector("div#recipientData input");
+    let ptoFormRecipientData = document.querySelector(
+        "div#recipientData input"
+    );
     let recipientList = document.getElementById("recipientList");
     let ptoFormLeaveDetails = document.querySelector("#leaveDetails");
     ptoFormLeaveDetails.style.display = "none";
